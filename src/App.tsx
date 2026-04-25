@@ -137,6 +137,89 @@ const getRandomImage = (type: string) => {
   return arr[Math.floor(Math.random() * arr.length)];
 };
 
+// === ASSEGNAZIONE INTELLIGENTE DELLE IMMAGINI DI REPERTORIO ===
+const getSmartImage = (name: string, description: string, type: string) => {
+  const text = (name + " " + description).toLowerCase();
+
+  if (
+    text.includes("gnocc") ||
+    text.includes("tigell") ||
+    text.includes("salum") ||
+    text.includes("taglier")
+  ) {
+    return "https://images.unsplash.com/photo-1601924614051-576839352e06?w=500&q=80"; // Foto Tagliere/Salumi/Gnocco Fritto
+  }
+  if (
+    text.includes("pizz") ||
+    text.includes("margherita") ||
+    text.includes("calzon")
+  ) {
+    return "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&q=80"; // Foto Pizza
+  }
+  if (
+    text.includes("past") ||
+    text.includes("spaghett") ||
+    text.includes("carbonara") ||
+    text.includes("tortellin") ||
+    text.includes("ragù")
+  ) {
+    return "https://images.unsplash.com/photo-1621510456681-2330135e5871?w=500&q=80"; // Foto Pasta/Primi
+  }
+  if (
+    text.includes("sushi") ||
+    text.includes("giappones") ||
+    text.includes("pesce crudo") ||
+    text.includes("uramaki") ||
+    text.includes("pok")
+  ) {
+    return "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500&q=80"; // Foto Sushi
+  }
+  if (
+    text.includes("hamburger") ||
+    text.includes("burger") ||
+    text.includes("pub ") ||
+    text.includes("fast food")
+  ) {
+    return "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&q=80"; // Foto Burger
+  }
+  if (
+    text.includes("carne") ||
+    text.includes("steak") ||
+    text.includes("braceria") ||
+    text.includes("griglia") ||
+    text.includes("fiorentin")
+  ) {
+    return "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=500&q=80"; // Foto Carne/Bistecca
+  }
+  if (
+    text.includes("pesce") ||
+    text.includes("mare") ||
+    text.includes("frittur") ||
+    text.includes("scampi")
+  ) {
+    return "https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=500&q=80"; // Foto Pesce/Frutti di mare
+  }
+  if (
+    text.includes("gelat") ||
+    text.includes("cremeri") ||
+    text.includes("dolce") ||
+    text.includes("pasticceri")
+  ) {
+    return "https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?w=500&q=80"; // Foto Gelato/Dolci
+  }
+  if (
+    text.includes("panin") ||
+    text.includes("schiacciat") ||
+    text.includes("sandwich") ||
+    text.includes("piadin")
+  ) {
+    return "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500&q=80"; // Foto Panino/Street Food
+  }
+
+  // Se non trova nessuna parola chiave, usa le immagini generiche di default
+  return getRandomImage(type);
+};
+
 const ITALIAN_PROVINCES = [
   "Agrigento",
   "Alessandria",
@@ -969,7 +1052,9 @@ export default function App() {
     const newEntry = {
       ...newPlace,
       votes: 1,
-      imageUrl: imagePreview || getRandomImage(newPlace.type),
+      imageUrl:
+        imagePreview ||
+        getSmartImage(newPlace.name, newPlace.description, newPlace.type),
       creatorId: user ? user.uid : null,
       creatorName: currentUser ? currentUser.name : "Un Local",
       comments: [],
