@@ -119,6 +119,9 @@ const LogoIcon = () => (
 // === IMMAGINI A TEMA ===
 const defaultFoodImage =
   "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=500&q=80";
+const defaultCityImage =
+  "https://images.unsplash.com/photo-1498579150354-977475b7e0b2?w=500&q=80"; // Immagine generica di un borgo italiano
+
 const restaurantPlaceholders = [
   "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=500&q=80",
   "https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=500&q=80",
@@ -332,6 +335,39 @@ const ITALIAN_PROVINCES = [
   "Vicenza",
   "Viterbo",
 ];
+
+// === IMMAGINI DELLE CARTOLINE DELLE CITTA' ===
+const getCityCoverImage = (city: string) => {
+  const c = city.toLowerCase();
+  if (c === "modena")
+    return "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80"; // Tortellini
+  if (c === "napoli")
+    return "https://images.unsplash.com/photo-1534015609462-9721019a31a9?w=500&q=80"; // Panorama Napoli
+  if (c === "roma")
+    return "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80"; // Colosseo
+  if (c === "bologna")
+    return "https://images.unsplash.com/photo-1516483638261-f4085ee6e409?w=500&q=80"; // Bologna
+  if (c === "milano")
+    return "https://images.unsplash.com/photo-1629851603513-1f196a090757?w=500&q=80"; // Duomo di Milano
+  if (c === "firenze")
+    return "https://images.unsplash.com/photo-1543429156-f0db2b535d47?w=500&q=80"; // Firenze
+  if (c === "torino")
+    return "https://images.unsplash.com/photo-1625805565576-9d3fc5d9f0f9?w=500&q=80"; // Torino
+  if (c === "palermo")
+    return "https://images.unsplash.com/photo-1583095123989-138378d38401?w=500&q=80"; // Palermo
+  if (c === "venezia")
+    return "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=500&q=80"; // Venezia
+  if (c === "genova")
+    return "https://images.unsplash.com/photo-1627014605658-36f7eb326fc6?w=500&q=80"; // Genova
+  if (c === "verona")
+    return "https://images.unsplash.com/photo-1610488425254-8c88691f11e9?w=500&q=80"; // Verona
+  if (c === "parma")
+    return "https://images.unsplash.com/photo-1623910260408-5c4d05c03dfd?w=500&q=80"; // Parma (Salumi/Borgo)
+  if (c === "bari")
+    return "https://images.unsplash.com/photo-1601614798670-39ba5b11e8dd?w=500&q=80"; // Bari/Puglia
+
+  return defaultCityImage; // Restituisce un bellissimo vicolo italiano per tutte le altre
+};
 
 // === TRADUZIONI ===
 const translations: any = {
@@ -1544,9 +1580,7 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {availableCities.map((city) => {
                   const cityPlaces = places.filter((p: any) => p.city === city);
-                  const coverImage = cityPlaces.sort(
-                    (a: any, b: any) => b.votes - a.votes
-                  )[0]?.imageUrl;
+                  const coverImage = getCityCoverImage(city);
 
                   return (
                     <div
@@ -1560,7 +1594,7 @@ export default function App() {
                     >
                       <div className="h-44 sm:h-40 rounded-2xl overflow-hidden mb-4 relative">
                         <img
-                          src={coverImage || defaultFoodImage}
+                          src={coverImage}
                           alt={city}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
