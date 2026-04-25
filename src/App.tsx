@@ -31,6 +31,9 @@ import {
   signInAnonymously,
   signInWithCustomToken,
   onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -567,6 +570,7 @@ export default function App() {
   const [viewingCommentsFor, setViewingCommentsFor] = useState(null);
 
   const googleInputRef = useRef(null);
+  const googleProvider = new GoogleAuthProvider(); // AGGIUNTO PER GOOGLE AUTH
 
   const showToast = (message) => {
     setToast(message);
@@ -761,6 +765,28 @@ export default function App() {
         showToast(t.alertCityNotCovered);
       }
     }
+  };
+
+  // === FUNZIONI GOOGLE AUTH ===
+  const handleGoogleLogin = async () => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      // Pre-compila il form col nome di Google
+      setAuthForm((prev) => ({ ...prev, name: result.user.displayName || "" }));
+      showToast("Accesso effettuato! Completa il profilo.");
+    } catch (error) {
+      console.error("Google Auth Error", error);
+      showToast("Errore di accesso. Riprova.");
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setCurrentUser(null);
+    showToast("Scollegato con successo!");
+    setShowAuthModal(false);
+    // Torniamo anonimi per poter continuare a leggere i locali degli altri
+    signInAnonymously(auth).catch((e) => console.error(e));
   };
 
   const saveProfile = async (e) => {
@@ -2074,106 +2100,198 @@ export default function App() {
             >
               <X size={20} />
             </button>
-            <div className="text-center mb-8 mt-2">
-              <div className="bg-gradient-to-br from-orange-400 to-red-500 text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
-                <UserCircle size={40} />
-              </div>
-              <h2 className="text-2xl sm:text-3xl font-black leading-tight">
-                {currentUser ? t.modalTitleEdit : t.modalTitleAuth}
-              </h2>
-              <p className="text-stone-500 font-medium mt-3 text-sm sm:text-base leading-relaxed">
-                {t.modalSubtitle}
-              </p>
-            </div>
-            <form onSubmit={saveProfile} className="space-y-4">
-              <input
-                required
-                type="text"
-                placeholder={t.namePlaceholder}
-                className="w-full border-2 border-stone-200 rounded-xl px-5 py-4 font-medium text-base sm:text-lg focus:border-orange-500 outline-none"
-                value={authForm.name}
-                onChange={(e) =>
-                  setAuthForm({ ...authForm, name: e.target.value })
-                }
-              />
 
-              <div className="relative">
-                <select
-                  required
-                  className={`w-full border-2 border-stone-200 rounded-xl px-5 py-4 font-medium text-base sm:text-lg outline-none appearance-none ${
-                    !canChangeProvince
-                      ? "bg-stone-100 text-stone-500 cursor-not-allowed"
-                      : "focus:border-orange-500 bg-white"
-                  }`}
-                  value={
-                    currentUser
-                      ? authForm.residenceCity
-                      : authForm.residenceCity
-                  }
-                  onChange={(e) => {
-                    setAuthForm({ ...authForm, residenceCity: e.target.value });
-                  }}
-                  disabled={!canChangeProvince}
-                >
-                  <option value="" disabled>
-                    {t.provincePlaceholder}
-                  </option>
-                  {ITALIAN_PROVINCES.map((prov) => (
-                    <option key={prov} value={prov}>
-                      {prov}
-                    </option>
-                  ))}
-                </select>
-
-                {!canChangeProvince && (
-                  <Lock
-                    size={18}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400"
-                  />
-                )}
-
-                {canChangeProvince && (
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-stone-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+            {!user || user.isAnonymous ? (
+              // STATO 1: NON LOGGATO CON GOOGLE
+              <div className="text-center mb-4 mt-2">
+                <div className="bg-white p-4 rounded-full inline-block mb-4 shadow-md border border-stone-100">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="40"
+                    height="40"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
                       <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
-                  </div>
-                )}
-              </div>
-
-              {currentUser && (
-                <div
-                  className={`flex items-center gap-1.5 text-xs font-bold p-2 rounded-lg mt-1 ${
-                    canChangeProvince
-                      ? "bg-yellow-50 text-yellow-700"
-                      : "bg-stone-100 text-stone-500"
-                  }`}
+                        fill="#4285F4"
+                        d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.434 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M -21.434 53.529 C -21.734 52.629 -21.934 51.679 -21.934 50.689 C -21.934 49.699 -21.734 48.749 -21.434 47.849 L -21.434 44.759 L -25.464 44.759 C -26.284 46.619 -26.844 48.569 -26.844 50.689 C -26.844 52.809 -26.284 54.759 -25.464 56.619 L -21.434 53.529 Z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M -14.754 42.889 C -12.984 42.889 -11.404 43.489 -10.154 44.629 L -6.734 41.039 C -8.804 38.929 -11.514 37.739 -14.754 37.739 C -19.444 37.739 -23.494 40.439 -25.464 44.759 L -21.434 47.849 C -20.534 44.999 -17.884 42.889 -14.754 42.889 Z"
+                      />
+                    </g>
+                  </svg>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black leading-tight">
+                  Accedi per continuare
+                </h2>
+                <p className="text-stone-500 font-medium mt-3 text-sm sm:text-base leading-relaxed">
+                  Per garantire l'autenticità dei consigli e prevenire gli
+                  abusi, ti chiediamo di identificarti tramite Google.
+                </p>
+                <button
+                  onClick={handleGoogleLogin}
+                  className="w-full bg-white border-2 border-stone-200 hover:border-blue-500 hover:bg-blue-50 text-stone-800 font-bold text-lg py-4 rounded-xl shadow-sm mt-8 transition-all flex items-center justify-center gap-3"
                 >
-                  <ShieldCheck size={14} className="shrink-0" />
-                  <p>
-                    {canChangeProvince ? t.provinceWarning : t.provinceLocked}
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="24"
+                    height="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                      <path
+                        fill="#4285F4"
+                        d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"
+                      />
+                      <path
+                        fill="#34A853"
+                        d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.434 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"
+                      />
+                      <path
+                        fill="#FBBC05"
+                        d="M -21.434 53.529 C -21.734 52.629 -21.934 51.679 -21.934 50.689 C -21.934 49.699 -21.734 48.749 -21.434 47.849 L -21.434 44.759 L -25.464 44.759 C -26.284 46.619 -26.844 48.569 -26.844 50.689 C -26.844 52.809 -26.284 54.759 -25.464 56.619 L -21.434 53.529 Z"
+                      />
+                      <path
+                        fill="#EA4335"
+                        d="M -14.754 42.889 C -12.984 42.889 -11.404 43.489 -10.154 44.629 L -6.734 41.039 C -8.804 38.929 -11.514 37.739 -14.754 37.739 C -19.444 37.739 -23.494 40.439 -25.464 44.759 L -21.434 47.849 C -20.534 44.999 -17.884 42.889 -14.754 42.889 Z"
+                      />
+                    </g>
+                  </svg>
+                  Continua con Google
+                </button>
+              </div>
+            ) : (
+              // STATO 2: LOGGATO, DEVE CREARE/MODIFICARE PROFILO
+              <>
+                <div className="text-center mb-8 mt-2">
+                  <div className="bg-gradient-to-br from-orange-400 to-red-500 text-white w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-md">
+                    <UserCircle size={40} />
+                  </div>
+                  <h2 className="text-2xl sm:text-3xl font-black leading-tight">
+                    {currentUser ? t.modalTitleEdit : "Completa il Profilo"}
+                  </h2>
+                  <p className="text-stone-500 font-medium mt-3 text-sm sm:text-base leading-relaxed">
+                    {t.modalSubtitle}
                   </p>
                 </div>
-              )}
+                <form onSubmit={saveProfile} className="space-y-4">
+                  <input
+                    required
+                    type="text"
+                    placeholder={t.namePlaceholder}
+                    className="w-full border-2 border-stone-200 rounded-xl px-5 py-4 font-medium text-base sm:text-lg focus:border-orange-500 outline-none"
+                    value={authForm.name}
+                    onChange={(e) =>
+                      setAuthForm({ ...authForm, name: e.target.value })
+                    }
+                  />
 
-              <button
-                type="submit"
-                disabled={!currentUser && !authForm.residenceCity}
-                className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-black text-lg py-4 rounded-xl shadow-lg mt-2 transition-colors"
-              >
-                {t.saveProfile}
-              </button>
-            </form>
+                  <div className="relative">
+                    <select
+                      required
+                      className={`w-full border-2 border-stone-200 rounded-xl px-5 py-4 font-medium text-base sm:text-lg outline-none appearance-none ${
+                        !canChangeProvince
+                          ? "bg-stone-100 text-stone-500 cursor-not-allowed"
+                          : "focus:border-orange-500 bg-white"
+                      }`}
+                      value={
+                        currentUser
+                          ? authForm.residenceCity
+                          : authForm.residenceCity
+                      }
+                      onChange={(e) => {
+                        setAuthForm({
+                          ...authForm,
+                          residenceCity: e.target.value,
+                        });
+                      }}
+                      disabled={!canChangeProvince}
+                    >
+                      <option value="" disabled>
+                        {t.provincePlaceholder}
+                      </option>
+                      {ITALIAN_PROVINCES.map((prov) => (
+                        <option key={prov} value={prov}>
+                          {prov}
+                        </option>
+                      ))}
+                    </select>
+
+                    {!canChangeProvince && (
+                      <Lock
+                        size={18}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-stone-400"
+                      />
+                    )}
+
+                    {canChangeProvince && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg
+                          className="w-5 h-5 text-stone-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          ></path>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+
+                  {currentUser && (
+                    <div
+                      className={`flex items-center gap-1.5 text-xs font-bold p-2 rounded-lg mt-1 ${
+                        canChangeProvince
+                          ? "bg-yellow-50 text-yellow-700"
+                          : "bg-stone-100 text-stone-500"
+                      }`}
+                    >
+                      <ShieldCheck size={14} className="shrink-0" />
+                      <p>
+                        {canChangeProvince
+                          ? t.provinceWarning
+                          : t.provinceLocked}
+                      </p>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={!user || !authForm.residenceCity}
+                    className="w-full bg-orange-600 hover:bg-orange-700 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-black text-lg py-4 rounded-xl shadow-lg mt-2 transition-colors"
+                  >
+                    {t.saveProfile}
+                  </button>
+
+                  {currentUser && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleLogout();
+                      }}
+                      className="w-full bg-stone-100 hover:bg-stone-200 text-stone-600 font-bold text-base py-3 rounded-xl mt-2 transition-colors"
+                    >
+                      Scollegati
+                    </button>
+                  )}
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
