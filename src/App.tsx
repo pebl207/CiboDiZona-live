@@ -7,7 +7,6 @@ import {
   Award,
   Navigation,
   ThumbsUp,
-  Info,
   UserCircle,
   X,
   Camera,
@@ -422,121 +421,6 @@ const translations: any = {
   },
 };
 
-const initialPlaces = [
-  {
-    id: "1",
-    city: "Napoli",
-    name: "L'Antica Pizzeria da Michele",
-    type: "Ristorante",
-    description:
-      "Un'istituzione. Solo Margherita e Marinara, ma sono la fine del mondo.",
-    creatorName: "Gennaro",
-    comments: [],
-    votes: 542,
-    address: "Via Cesare Sersale, 1",
-    imageUrl:
-      "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&q=80",
-  },
-  {
-    id: "2",
-    city: "Napoli",
-    name: "Friggitoria Fiorenzano",
-    type: "Street Food",
-    description:
-      "Il vero cuoppo napoletano. Frittura leggera e croccante, perfetto per passeggiare.",
-    creatorName: "Ciro",
-    comments: [],
-    votes: 489,
-    address: "Via Pignasecca, 48",
-    imageUrl:
-      "https://images.unsplash.com/photo-1626200419188-f56cedcc2bce?w=500&q=80",
-  },
-  {
-    id: "3",
-    city: "Napoli",
-    name: "Trattoria da Nennella",
-    type: "Ristorante",
-    description:
-      "Pasta e patate con la provola indimenticabile. Atmosfera verace e chiassosa, vera Napoli.",
-    creatorName: "Maria",
-    comments: [],
-    votes: 450,
-    address: "Vico Lungo Teatro Nuovo, 103",
-    imageUrl:
-      "https://images.unsplash.com/photo-1621510456681-2330135e5871?w=500&q=80",
-  },
-  {
-    id: "7",
-    city: "Roma",
-    name: "Felice a Testaccio",
-    type: "Ristorante",
-    description:
-      "La migliore Cacio e Pepe di Roma, mantecata direttamente al tavolo.",
-    creatorName: "Claudio",
-    comments: [],
-    votes: 610,
-    address: "Via Mastro Giorgio, 29",
-    imageUrl:
-      "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=500&q=80",
-  },
-  {
-    id: "8",
-    city: "Roma",
-    name: "Trapizzino",
-    type: "Street Food",
-    description:
-      "Tasche di pizza bianca ripiene dei grandi classici romani (pollo alla cacciatora, polpette al sugo).",
-    creatorName: "Sara",
-    comments: [],
-    votes: 520,
-    address: "Piazza Trilussa, 46",
-    imageUrl:
-      "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500&q=80",
-  },
-  {
-    id: "12",
-    city: "Bologna",
-    name: "Osteria dell'Orsa",
-    type: "Ristorante",
-    description:
-      "Tagliatelle al ragù spettacolari a prezzi onesti. Sempre pieno di local e studenti.",
-    creatorName: "Matteo",
-    comments: [],
-    votes: 490,
-    address: "Via Mentana, 1",
-    imageUrl:
-      "https://images.unsplash.com/photo-1626844131082-256783844137?w=500&q=80",
-  },
-  {
-    id: "13",
-    city: "Bologna",
-    name: "Cremeria Santo Stefano",
-    type: "Street Food",
-    description:
-      "Non è un pasto, ma il gelato qui è considerato sacro dai bolognesi.",
-    creatorName: "Elena",
-    comments: [],
-    votes: 450,
-    address: "Via Santo Stefano, 70c",
-    imageUrl:
-      "https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?w=500&q=80",
-  },
-  {
-    id: "14",
-    city: "Modena",
-    name: "Trattoria Aldina",
-    type: "Ristorante",
-    description:
-      "Tortellini in brodo da sogno e un bollito che ti rimette al mondo.",
-    creatorName: "Luca",
-    comments: [],
-    votes: 580,
-    address: "Via Luigi Albinelli, 40",
-    imageUrl:
-      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80",
-  },
-];
-
 export default function App() {
   const [language, setLanguage] = useState("it");
   const t = translations[language];
@@ -551,7 +435,6 @@ export default function App() {
   const [user, setUser] = useState<any>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isDbReady, setIsDbReady] = useState(false);
-  const seededRef = useRef(false);
 
   // Form e UI States
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -683,24 +566,19 @@ export default function App() {
     const unsubPlaces = onSnapshot(
       placesRef,
       (snap) => {
-        if (snap.empty && !seededRef.current) {
-          seededRef.current = true;
-          initialPlaces.forEach((p) => addDoc(placesRef, p).catch((e) => e));
-          setPlaces(initialPlaces);
+        if (snap.empty) {
+          setPlaces([]);
           setIsDbReady(true);
-        } else if (!snap.empty) {
+        } else {
           const pList: any[] = [];
           snap.forEach((d) => pList.push({ id: d.id, ...d.data() }));
           setPlaces(pList);
           setIsDbReady(true);
-        } else {
-          setPlaces(initialPlaces);
-          setIsDbReady(true);
         }
       },
       (err) => {
-        console.warn("Lettura Firestore fallita. Uso dati locali.");
-        setPlaces(initialPlaces);
+        console.warn("Lettura Firestore fallita.");
+        setPlaces([]);
         setIsDbReady(true);
       }
     );
