@@ -60,7 +60,7 @@ declare global {
 }
 
 // =====================================================================
-// ⚠️ INSERISCI QUI LA TUA CHIAVE API DI GOOGLE CLOUD (Places API) ⚠️
+// 1️⃣ INSERISCI QUI LA CHIAVE API DI GOOGLE CLOUD (Serve per Maps/Places)
 // =====================================================================
 const GOOGLE_MAPS_API_KEY = "AIzaSyCX1dzgDDQJ6gotGE5D9JnD7EBqb4Bs9ls";
 // =====================================================================
@@ -81,6 +81,9 @@ if (configString) {
 }
 
 if (!myConfig) {
+  // =====================================================================
+  // 2️⃣ INSERISCI QUI I CODICI DEL TUO FIREBASE (NON la chiave di Maps!)
+  // =====================================================================
   myConfig = {
     apiKey: "AIzaSyCX1dzgDDQJ6gotGE5D9JnD7EBqb4Bs9ls",
     authDomain: "cibodizona-web.firebaseapp.com",
@@ -96,7 +99,7 @@ if (!myConfig) {
 const app = getApps().length === 0 ? initializeApp(myConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
-const googleProvider = new GoogleAuthProvider(); // SPOSTATO QUI IN ALTO PER STABILITA'
+const googleProvider = new GoogleAuthProvider();
 
 // @ts-ignore
 const databaseId =
@@ -452,90 +455,6 @@ const initialPlaces = [
     imageUrl:
       "https://images.unsplash.com/photo-1626200419188-f56cedcc2bce?w=500&q=80",
   },
-  {
-    id: "3",
-    city: "Napoli",
-    name: "Trattoria da Nennella",
-    type: "Ristorante",
-    description:
-      "Pasta e patate con la provola indimenticabile. Atmosfera verace e chiassosa, vera Napoli.",
-    creatorName: "Maria",
-    comments: [],
-    votes: 450,
-    address: "Vico Lungo Teatro Nuovo, 103",
-    imageUrl:
-      "https://images.unsplash.com/photo-1621510456681-2330135e5871?w=500&q=80",
-  },
-  {
-    id: "7",
-    city: "Roma",
-    name: "Felice a Testaccio",
-    type: "Ristorante",
-    description:
-      "La migliore Cacio e Pepe di Roma, mantecata direttamente al tavolo.",
-    creatorName: "Claudio",
-    comments: [],
-    votes: 610,
-    address: "Via Mastro Giorgio, 29",
-    imageUrl:
-      "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=500&q=80",
-  },
-  {
-    id: "8",
-    city: "Roma",
-    name: "Trapizzino",
-    type: "Street Food",
-    description:
-      "Tasche di pizza bianca ripiene dei grandi classici romani (pollo alla cacciatora, polpette al sugo).",
-    creatorName: "Sara",
-    comments: [],
-    votes: 520,
-    address: "Piazza Trilussa, 46",
-    imageUrl:
-      "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500&q=80",
-  },
-  {
-    id: "12",
-    city: "Bologna",
-    name: "Osteria dell'Orsa",
-    type: "Ristorante",
-    description:
-      "Tagliatelle al ragù spettacolari a prezzi onesti. Sempre pieno di local e studenti.",
-    creatorName: "Matteo",
-    comments: [],
-    votes: 490,
-    address: "Via Mentana, 1",
-    imageUrl:
-      "https://images.unsplash.com/photo-1626844131082-256783844137?w=500&q=80",
-  },
-  {
-    id: "13",
-    city: "Bologna",
-    name: "Cremeria Santo Stefano",
-    type: "Street Food",
-    description:
-      "Non è un pasto, ma il gelato qui è considerato sacro dai bolognesi.",
-    creatorName: "Elena",
-    comments: [],
-    votes: 450,
-    address: "Via Santo Stefano, 70c",
-    imageUrl:
-      "https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?w=500&q=80",
-  },
-  {
-    id: "14",
-    city: "Modena",
-    name: "Trattoria Aldina",
-    type: "Ristorante",
-    description:
-      "Tortellini in brodo da sogno e un bollito che ti rimette al mondo.",
-    creatorName: "Luca",
-    comments: [],
-    votes: 580,
-    address: "Via Luigi Albinelli, 40",
-    imageUrl:
-      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80",
-  },
 ];
 
 export default function App() {
@@ -682,7 +601,7 @@ export default function App() {
     if (
       currentView !== "add" ||
       !GOOGLE_MAPS_API_KEY ||
-      GOOGLE_MAPS_API_KEY === "INSERISCI_QUI_LA_TUA_CHIAVE_GOOGLE"
+      GOOGLE_MAPS_API_KEY === "INSERISCI_QUI_LA_TUA_CHIAVE_GOOGLE_MAPS"
     )
       return;
 
@@ -695,7 +614,6 @@ export default function App() {
       )
         return;
 
-      // Impedisce la creazione di istanze multiple che potrebbero rallentare o bloccare l'input
       if (googleInputRef.current.getAttribute("data-has-places")) return;
       googleInputRef.current.setAttribute("data-has-places", "true");
 
@@ -776,14 +694,13 @@ export default function App() {
     }
   };
 
-  // === FUNZIONI GOOGLE AUTH ===
+  // === FUNZIONI GOOGLE E EMAIL AUTH ===
   const handleGoogleLogin = async () => {
     showToast("Apertura Google in corso...");
     setAuthError("");
     try {
-      // Istanziamo il provider qui dentro per evitare blocchi del browser
       const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" }); // Forza la richiesta dell'account
+      provider.setCustomParameters({ prompt: "select_account" });
 
       const result = await signInWithPopup(auth, provider);
       setAuthForm((prev) => ({ ...prev, name: result.user.displayName || "" }));
@@ -791,11 +708,9 @@ export default function App() {
     } catch (error) {
       console.error("Google Auth Error", error);
       if (error.code === "auth/popup-blocked") {
-        setAuthError(
-          "Il tuo browser ha bloccato la finestra di Google. Autorizza i pop-up per questo sito."
-        );
+        setAuthError("Il browser ha bloccato Google. Autorizza i pop-up.");
       } else if (error.code === "auth/popup-closed-by-user") {
-        setAuthError("Hai chiuso la finestra di Google prima di accedere.");
+        setAuthError("Hai chiuso la finestra di Google.");
       } else {
         setAuthError(`Errore Google: ${error.message}`);
       }
@@ -806,9 +721,7 @@ export default function App() {
     e.preventDefault();
     setAuthError("");
     if (!emailAuth.email || emailAuth.password.length < 6) {
-      setAuthError(
-        "Inserisci un'email valida e una password di almeno 6 caratteri."
-      );
+      setAuthError("Inserisci un'email e una password di almeno 6 caratteri.");
       return;
     }
 
@@ -819,7 +732,7 @@ export default function App() {
           emailAuth.email,
           emailAuth.password
         );
-        showToast("Account CiboDiZona creato! Ora completa il profilo.");
+        showToast("Account creato! Ora completa il profilo.");
       } else {
         await signInWithEmailAndPassword(
           auth,
@@ -832,7 +745,7 @@ export default function App() {
       console.error("Email Auth Error", error);
       if (error.code === "auth/email-already-in-use") {
         setAuthError(
-          "Questa email è già registrata. Clicca in basso per 'Accedere' invece di creare un nuovo account."
+          "Questa email è già registrata. Clicca in basso per 'Accedere'."
         );
       } else if (
         error.code === "auth/invalid-credential" ||
@@ -840,10 +753,10 @@ export default function App() {
         error.code === "auth/wrong-password"
       ) {
         setAuthError(
-          "Email o password errati. Se sei nuovo, clicca in basso su 'Nuovo utente? Crea un account'."
+          "Email o password errati. Clicca in basso se devi creare un account."
         );
       } else {
-        setAuthError(`Errore di sistema: ${error.message}`); // Mostra l'errore esatto
+        setAuthError(`Errore di sistema: ${error.message}`);
       }
     }
   };
@@ -853,7 +766,6 @@ export default function App() {
     setCurrentUser(null);
     showToast("Scollegato con successo!");
     setShowAuthModal(false);
-    // Torniamo anonimi per poter continuare a leggere i locali degli altri
     signInAnonymously(auth).catch((e) => console.error(e));
   };
 
@@ -1964,7 +1876,7 @@ export default function App() {
 
                 <textarea
                   required
-                  rows={4}
+                  rows="4"
                   placeholder={t.whyGoPlaceholder}
                   className="w-full border-2 border-stone-200 rounded-2xl px-5 py-4 focus:border-orange-500 transition-all resize-none text-base sm:text-lg font-medium outline-none mt-2"
                   value={newPlace.description}
@@ -2005,7 +1917,7 @@ export default function App() {
             </div>
             <form onSubmit={confirmSupport} className="space-y-4">
               <textarea
-                rows={3}
+                rows="3"
                 placeholder={t.leaveCommentPlaceholder}
                 className="w-full border-2 border-stone-200 rounded-xl px-4 py-3 focus:border-orange-500 transition-all resize-none font-medium outline-none"
                 value={supportComment}
@@ -2135,7 +2047,7 @@ export default function App() {
 
               <textarea
                 required
-                rows={4}
+                rows="4"
                 placeholder={t.whyGoPlaceholder}
                 className="w-full border-2 border-stone-200 rounded-xl px-4 py-3 focus:border-orange-500 transition-all resize-none font-medium outline-none"
                 value={placeToEdit.description}
@@ -2170,7 +2082,7 @@ export default function App() {
             </button>
 
             {!user || user.isAnonymous ? (
-              // STATO 1: NON LOGGATO CON GOOGLE
+              // STATO 1: NON LOGGATO
               <div className="text-center mb-4 mt-2">
                 <div className="bg-white p-4 rounded-full inline-block mb-4 shadow-md border border-stone-100">
                   <svg
@@ -2407,7 +2319,7 @@ export default function App() {
                     {t.saveProfile}
                   </button>
 
-                  {currentUser && (
+                  {user && !user.isAnonymous && (
                     <button
                       type="button"
                       onClick={() => {
