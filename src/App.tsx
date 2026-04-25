@@ -34,6 +34,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -564,6 +566,11 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [possibleDuplicates, setPossibleDuplicates] = useState([]);
 
+  // Stati per Autenticazione Email
+  const [emailAuth, setEmailAuth] = useState({ email: "", password: "" });
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [authError, setAuthError] = useState("");
+
   // Nuovi stati per i Commenti/Consigli
   const [placeToSupport, setPlaceToSupport] = useState(null);
   const [supportComment, setSupportComment] = useState("");
@@ -776,7 +783,49 @@ export default function App() {
       showToast("Accesso effettuato! Completa il profilo.");
     } catch (error) {
       console.error("Google Auth Error", error);
-      showToast("Errore di accesso. Riprova.");
+      showToast(
+        "Errore di accesso. Assicurati che non ci siano blocchi pop-up."
+      );
+    }
+  };
+
+  const handleEmailAuth = async (e) => {
+    e.preventDefault();
+    setAuthError("");
+    if (!emailAuth.email || emailAuth.password.length < 6) {
+      setAuthError(
+        "Inserisci un'email valida e una password di almeno 6 caratteri."
+      );
+      return;
+    }
+
+    try {
+      if (isRegistering) {
+        await createUserWithEmailAndPassword(
+          auth,
+          emailAuth.email,
+          emailAuth.password
+        );
+        showToast("Registrazione completata! Completa il profilo.");
+      } else {
+        await signInWithEmailAndPassword(
+          auth,
+          emailAuth.email,
+          emailAuth.password
+        );
+        showToast("Accesso effettuato!");
+      }
+    } catch (error) {
+      console.error("Email Auth Error", error);
+      if (error.code === "auth/email-already-in-use")
+        setAuthError("Questa email è già registrata.");
+      else if (
+        error.code === "auth/invalid-credential" ||
+        error.code === "auth/wrong-password" ||
+        error.code === "auth/user-not-found"
+      )
+        setAuthError("Email o password errati.");
+      else setAuthError("Errore durante l'autenticazione. Riprova.");
     }
   };
 
@@ -2134,41 +2183,102 @@ export default function App() {
                 <h2 className="text-2xl sm:text-3xl font-black leading-tight">
                   Accedi per continuare
                 </h2>
-                <p className="text-stone-500 font-medium mt-3 text-sm sm:text-base leading-relaxed">
+                <p className="text-stone-500 font-medium mt-3 text-sm sm:text-base leading-relaxed mb-6">
                   Per garantire l'autenticità dei consigli e prevenire gli
-                  abusi, ti chiediamo di identificarti tramite Google.
+                  abusi, ti chiediamo di identificarti.
                 </p>
-                <button
-                  onClick={handleGoogleLogin}
-                  className="w-full bg-white border-2 border-stone-200 hover:border-blue-500 hover:bg-blue-50 text-stone-800 font-bold text-lg py-4 rounded-xl shadow-sm mt-8 transition-all flex items-center justify-center gap-3"
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    width="24"
-                    height="24"
-                    xmlns="http://www.w3.org/2000/svg"
+
+                <div className="space-y-4">
+                  <button
+                    onClick={handleGoogleLogin}
+                    type="button"
+                    className="w-full bg-white border-2 border-stone-200 hover:border-blue-500 hover:bg-blue-50 text-stone-800 font-bold text-lg py-3 rounded-xl shadow-sm transition-all flex items-center justify-center gap-3"
                   >
-                    <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
-                      <path
-                        fill="#4285F4"
-                        d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.434 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M -21.434 53.529 C -21.734 52.629 -21.934 51.679 -21.934 50.689 C -21.934 49.699 -21.734 48.749 -21.434 47.849 L -21.434 44.759 L -25.464 44.759 C -26.284 46.619 -26.844 48.569 -26.844 50.689 C -26.844 52.809 -26.284 54.759 -25.464 56.619 L -21.434 53.529 Z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M -14.754 42.889 C -12.984 42.889 -11.404 43.489 -10.154 44.629 L -6.734 41.039 C -8.804 38.929 -11.514 37.739 -14.754 37.739 C -19.444 37.739 -23.494 40.439 -25.464 44.759 L -21.434 47.849 C -20.534 44.999 -17.884 42.889 -14.754 42.889 Z"
-                      />
-                    </g>
-                  </svg>
-                  Continua con Google
-                </button>
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="24"
+                      height="24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                        <path
+                          fill="#4285F4"
+                          d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"
+                        />
+                        <path
+                          fill="#34A853"
+                          d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.434 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"
+                        />
+                        <path
+                          fill="#FBBC05"
+                          d="M -21.434 53.529 C -21.734 52.629 -21.934 51.679 -21.934 50.689 C -21.934 49.699 -21.734 48.749 -21.434 47.849 L -21.434 44.759 L -25.464 44.759 C -26.284 46.619 -26.844 48.569 -26.844 50.689 C -26.844 52.809 -26.284 54.759 -25.464 56.619 L -21.434 53.529 Z"
+                        />
+                        <path
+                          fill="#EA4335"
+                          d="M -14.754 42.889 C -12.984 42.889 -11.404 43.489 -10.154 44.629 L -6.734 41.039 C -8.804 38.929 -11.514 37.739 -14.754 37.739 C -19.444 37.739 -23.494 40.439 -25.464 44.759 L -21.434 47.849 C -20.534 44.999 -17.884 42.889 -14.754 42.889 Z"
+                        />
+                      </g>
+                    </svg>
+                    Continua con Google
+                  </button>
+
+                  <div className="relative flex items-center py-2">
+                    <div className="flex-grow border-t border-stone-200"></div>
+                    <span className="flex-shrink-0 mx-4 text-stone-400 text-xs font-bold uppercase tracking-wider">
+                      oppure
+                    </span>
+                    <div className="flex-grow border-t border-stone-200"></div>
+                  </div>
+
+                  <form onSubmit={handleEmailAuth} className="space-y-3">
+                    <input
+                      type="email"
+                      placeholder="La tua Email"
+                      className="w-full border-2 border-stone-200 rounded-xl px-4 py-3 font-medium text-base focus:border-orange-500 outline-none"
+                      value={emailAuth.email}
+                      onChange={(e) =>
+                        setEmailAuth({ ...emailAuth, email: e.target.value })
+                      }
+                    />
+                    <input
+                      type="password"
+                      placeholder="Password (min. 6 caratteri)"
+                      className="w-full border-2 border-stone-200 rounded-xl px-4 py-3 font-medium text-base focus:border-orange-500 outline-none"
+                      value={emailAuth.password}
+                      onChange={(e) =>
+                        setEmailAuth({ ...emailAuth, password: e.target.value })
+                      }
+                    />
+
+                    {authError && (
+                      <p className="text-red-500 text-sm font-bold text-left bg-red-50 p-2 rounded-lg">
+                        {authError}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="w-full bg-stone-900 hover:bg-black text-white font-black text-lg py-3.5 rounded-xl shadow-lg transition-colors"
+                    >
+                      {isRegistering
+                        ? "Registrati con Email"
+                        : "Accedi con Email"}
+                    </button>
+                  </form>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsRegistering(!isRegistering);
+                      setAuthError("");
+                    }}
+                    className="w-full text-sm text-stone-500 hover:text-orange-600 font-bold mt-2 transition-colors"
+                  >
+                    {isRegistering
+                      ? "Hai già un account? Accedi qui"
+                      : "Non hai un account? Registrati qui"}
+                  </button>
+                </div>
               </div>
             ) : (
               // STATO 2: LOGGATO, DEVE CREARE/MODIFICARE PROFILO
