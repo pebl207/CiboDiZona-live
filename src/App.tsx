@@ -86,9 +86,9 @@ if (!myConfig) {
   // =====================================================================
   myConfig = {
     apiKey: "AIzaSyDm6K6NewCWzVT3383lesp15JzVVTdbirI",
-    authDomain: "cibodizona.firebaseapp.com",
-    projectId: "cibodizona",
-    storageBucket: "cibodizona.firebasestorage.app",
+    authDomain: "cibodizona-web.firebaseapp.com",
+    projectId: "cibodizona-web",
+    storageBucket: "cibodizona-web.firebasestorage.app",
     messagingSenderId: "1071596932087",
     appId: "1:1071596932087:web:bd2ee50ebe43ca4ce13cf2",
   };
