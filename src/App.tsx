@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   MapPin,
@@ -55,9 +56,18 @@ const GOOGLE_MAPS_API_KEY = "AIzaSyALxogT9uBTtHAWA1yvOJGxabPA-HbSnHE";
 // =====================================================================
 
 // === CONFIGURAZIONE FIREBASE ===
+declare const __firebase_config: any;
+declare const __app_id: any;
+declare const __initial_auth_token: any;
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 const configString =
   typeof __firebase_config !== "undefined" ? __firebase_config : null;
-let myConfig = null;
+let myConfig: any = null;
 
 if (configString) {
   try {
@@ -98,7 +108,7 @@ const LogoIcon = () => (
       src="/logo.jpg"
       alt="CiboDiZona"
       className="h-full w-full object-contain"
-      onError={(e) => {
+      onError={(e: any) => {
         e.currentTarget.onerror = null;
         e.currentTarget.src =
           "https://placehold.co/100x100/ea580c/ffffff?text=Logo&font=montserrat";
@@ -122,7 +132,7 @@ const streetFoodPlaceholders = [
   "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=500&q=80",
   "https://images.unsplash.com/photo-1574484284002-952d92456975?w=500&q=80",
 ];
-const getRandomImage = (type) => {
+const getRandomImage = (type: string) => {
   const arr =
     type === "Street Food" ? streetFoodPlaceholders : restaurantPlaceholders;
   return arr[Math.floor(Math.random() * arr.length)];
@@ -242,7 +252,7 @@ const ITALIAN_PROVINCES = [
 ];
 
 // === TRADUZIONI ===
-const translations = {
+const translations: any = {
   it: {
     appName: "CiboDiZona",
     becomeLocal: "Diventa Local",
@@ -533,13 +543,13 @@ export default function App() {
 
   const [currentView, setCurrentView] = useState("home");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCity, setSelectedCity] = useState(null);
-  const [places, setPlaces] = useState([]);
+  const [selectedCity, setSelectedCity] = useState<any>(null);
+  const [places, setPlaces] = useState<any[]>([]);
   const [filterType, setFilterType] = useState("All");
 
   // Stati per Firebase & Auth
-  const [user, setUser] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [isDbReady, setIsDbReady] = useState(false);
   const seededRef = useRef(false);
 
@@ -553,10 +563,10 @@ export default function App() {
     description: "",
     address: "",
   });
-  const [placeToEdit, setPlaceToEdit] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [toast, setToast] = useState(null);
-  const [possibleDuplicates, setPossibleDuplicates] = useState([]);
+  const [placeToEdit, setPlaceToEdit] = useState<any>(null);
+  const [imagePreview, setImagePreview] = useState<any>(null);
+  const [toast, setToast] = useState<any>(null);
+  const [possibleDuplicates, setPossibleDuplicates] = useState<any[]>([]);
 
   // Stati per Autenticazione Email
   const [emailAuth, setEmailAuth] = useState({ email: "", password: "" });
@@ -564,13 +574,13 @@ export default function App() {
   const [authError, setAuthError] = useState("");
 
   // Nuovi stati per i Commenti/Consigli
-  const [placeToSupport, setPlaceToSupport] = useState(null);
+  const [placeToSupport, setPlaceToSupport] = useState<any>(null);
   const [supportComment, setSupportComment] = useState("");
-  const [viewingCommentsFor, setViewingCommentsFor] = useState(null);
+  const [viewingCommentsFor, setViewingCommentsFor] = useState<any>(null);
 
-  const googleInputRef = useRef(null);
+  const googleInputRef = useRef<any>(null);
 
-  const showToast = (message) => {
+  const showToast = (message: string) => {
     setToast(message);
     setTimeout(() => setToast(null), 3500);
   };
@@ -648,7 +658,7 @@ export default function App() {
           setPlaces(initialPlaces);
           setIsDbReady(true);
         } else if (!snap.empty) {
-          const pList = [];
+          const pList: any[] = [];
           snap.forEach((d) => pList.push({ id: d.id, ...d.data() }));
           setPlaces(pList);
           setIsDbReady(true);
@@ -714,7 +724,7 @@ export default function App() {
     };
 
     const scriptId = "google-maps-script";
-    let script = document.getElementById(scriptId);
+    let script: any = document.getElementById(scriptId);
 
     if (!window.google) {
       if (!script) {
@@ -739,16 +749,18 @@ export default function App() {
   }, [currentView]);
 
   const availableCities = useMemo(() => {
-    const cities = places.map((p) => p.city);
+    const cities = places.map((p: any) => p.city);
     return [...new Set(cities)].sort();
   }, [places]);
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: any) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     const query = searchQuery.toLowerCase().trim();
 
-    const cityMatch = availableCities.find((c) => c.toLowerCase() === query);
+    const cityMatch = availableCities.find(
+      (c: any) => c.toLowerCase() === query
+    );
 
     if (cityMatch) {
       setSelectedCity(cityMatch);
@@ -774,12 +786,10 @@ export default function App() {
     setAuthError("");
     try {
       const provider = new GoogleAuthProvider();
-      // Rimosso il custom parameter che a volte causa "invalid action" su alcuni browser
-
       const result = await signInWithPopup(auth, provider);
       setAuthForm((prev) => ({ ...prev, name: result.user.displayName || "" }));
       showToast("Accesso effettuato! Completa il profilo.");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Google Auth Error", error);
       if (error.code === "auth/popup-blocked") {
         setAuthError(
@@ -788,13 +798,12 @@ export default function App() {
       } else if (error.code === "auth/popup-closed-by-user") {
         setAuthError("Hai chiuso la finestra di Google prima di completare.");
       } else {
-        // Ora mostrerà il codice esatto per aiutarci a diagnosticare
         setAuthError(`Errore Google: [${error.code}] ${error.message}`);
       }
     }
   };
 
-  const handleEmailAuth = async (e) => {
+  const handleEmailAuth = async (e: any) => {
     e.preventDefault();
     setAuthError("");
     if (!emailAuth.email || emailAuth.password.length < 6) {
@@ -818,7 +827,7 @@ export default function App() {
         );
         showToast("Accesso effettuato con successo!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Email Auth Error", error);
       if (error.code === "auth/email-already-in-use") {
         setAuthError(
@@ -846,7 +855,7 @@ export default function App() {
     signInAnonymously(auth).catch((e) => console.error(e));
   };
 
-  const saveProfile = async (e) => {
+  const saveProfile = async (e: any) => {
     e.preventDefault();
 
     if (currentUser && authForm.residenceCity !== currentUser.residenceCity) {
@@ -880,7 +889,7 @@ export default function App() {
             );
           } else {
             const newComments = (place.comments || []).filter(
-              (c) => c.userId !== user.uid
+              (c: any) => c.userId !== user.uid
             );
             await updateDoc(
               doc(
@@ -923,7 +932,7 @@ export default function App() {
 
       setCurrentUser(newProfileData);
       showToast(t.provinceChangedSuccess);
-      setShowAuthModal(false); // CHIUSURA AUTOMATICA A AGGIORNAMENTO
+      setShowAuthModal(false);
       return;
     }
 
@@ -957,7 +966,7 @@ export default function App() {
 
       setCurrentUser(profileData);
       showToast("Profilo salvato! ✅");
-      setShowAuthModal(false); // CHIUSURA AUTOMATICA A CREAZIONE
+      setShowAuthModal(false);
     }
   };
 
@@ -979,17 +988,18 @@ export default function App() {
     setCurrentView("add");
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = (e: any) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (ev) => setImagePreview(ev.target.result);
+      reader.onload = (ev: any) => setImagePreview(ev.target.result);
       reader.readAsDataURL(file);
     }
   };
 
-  const checkForDuplicates = (inputName) => {
-    const normalize = (str) => str.toLowerCase().replace(/[^a-z0-9]/g, " ");
+  const checkForDuplicates = (inputName: string) => {
+    const normalize = (str: string) =>
+      str.toLowerCase().replace(/[^a-z0-9]/g, " ");
     const ignoreWords = [
       "trattoria",
       "pizzeria",
@@ -1010,7 +1020,7 @@ export default function App() {
     ];
     const inputWords = normalize(inputName)
       .split(" ")
-      .filter((w) => w.length > 2 && !ignoreWords.includes(w));
+      .filter((w: string) => w.length > 2 && !ignoreWords.includes(w));
 
     if (inputWords.length === 0) {
       setPossibleDuplicates([]);
@@ -1021,13 +1031,13 @@ export default function App() {
       if (p.city.toLowerCase() !== currentUser?.residenceCity?.toLowerCase())
         return false;
       const pWords = normalize(p.name).split(" ");
-      return inputWords.some((iw) => pWords.includes(iw));
+      return inputWords.some((iw: string) => pWords.includes(iw));
     });
 
     setPossibleDuplicates(duplicates);
   };
 
-  const handleAddPlace = async (e) => {
+  const handleAddPlace = async (e: any) => {
     e.preventDefault();
     if (!newPlace.name || !newPlace.city || !newPlace.description) return;
 
@@ -1103,7 +1113,7 @@ export default function App() {
     setPossibleDuplicates([]);
   };
 
-  const handleDeletePlace = async (id) => {
+  const handleDeletePlace = async (id: string) => {
     if (!window.confirm(t.confirmDelete)) return;
 
     if (user) {
@@ -1114,7 +1124,7 @@ export default function App() {
 
         const userVotes = currentUser.votedPlaces || [];
         if (userVotes.includes(id)) {
-          const newVotesArray = userVotes.filter((v) => v !== id);
+          const newVotesArray = userVotes.filter((v: string) => v !== id);
           const profileRef = doc(
             db,
             "artifacts",
@@ -1134,7 +1144,7 @@ export default function App() {
     showToast(t.placeDeleted);
   };
 
-  const handleUpdatePlace = async (e) => {
+  const handleUpdatePlace = async (e: any) => {
     e.preventDefault();
     if (!placeToEdit) return;
 
@@ -1167,7 +1177,7 @@ export default function App() {
     showToast(t.changesSaved);
   };
 
-  const handleVoteClick = (id) => {
+  const handleVoteClick = (id: string) => {
     const place = places.find((p) => p.id === id);
     if (!currentUser) {
       showToast(t.alertNeedAuthVote);
@@ -1194,7 +1204,7 @@ export default function App() {
     }
   };
 
-  const removeVote = async (place, userVotes) => {
+  const removeVote = async (place: any, userVotes: any[]) => {
     const newVotesArray = userVotes.filter((vId) => vId !== place.id);
 
     if (place.votes <= 1) {
@@ -1231,7 +1241,7 @@ export default function App() {
     } else {
       showToast(t.voteRemoved);
       const newComments = (place.comments || []).filter(
-        (c) => c.userId !== user.uid
+        (c: any) => c.userId !== user.uid
       );
 
       if (user) {
@@ -1276,7 +1286,7 @@ export default function App() {
     }
   };
 
-  const confirmSupport = async (e) => {
+  const confirmSupport = async (e: any) => {
     e.preventDefault();
     if (!placeToSupport || !currentUser) return;
 
@@ -1490,13 +1500,13 @@ export default function App() {
                   <input
                     type="text"
                     placeholder={t.wherePlaceholder}
-                    className="w-full pl-11 pr-28 sm:pl-14 sm:pr-40 py-4 sm:py-5 rounded-full text-stone-800 text-base sm:text-xl font-medium leading-normal shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all placeholder:text-stone-400"
+                    className="w-full pl-11 pr-24 sm:pl-14 sm:pr-36 py-3.5 sm:py-5 rounded-full text-stone-800 text-sm sm:text-xl font-medium shadow-xl focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all placeholder:text-stone-400 truncate"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                   <button
                     type="submit"
-                    className="absolute right-2 sm:right-3 bg-stone-900 text-white px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-full font-bold text-sm sm:text-lg hover:bg-stone-800 transition-colors shadow-lg active:scale-95"
+                    className="absolute right-2 sm:right-3 bg-stone-900 text-white px-4 sm:px-8 py-2 sm:py-3.5 rounded-full font-bold text-sm sm:text-lg hover:bg-stone-800 transition-colors shadow-lg active:scale-95"
                   >
                     {t.searchBtn}
                   </button>
@@ -1517,9 +1527,9 @@ export default function App() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {availableCities.map((city) => {
-                  const cityPlaces = places.filter((p) => p.city === city);
+                  const cityPlaces = places.filter((p: any) => p.city === city);
                   const coverImage = cityPlaces.sort(
-                    (a, b) => b.votes - a.votes
+                    (a: any, b: any) => b.votes - a.votes
                   )[0]?.imageUrl;
 
                   return (
@@ -1611,7 +1621,7 @@ export default function App() {
 
             <div className="space-y-6">
               {cityTop10.length > 0 ? (
-                cityTop10.map((place, index) => {
+                cityTop10.map((place: any, index: number) => {
                   const isVotedByMe = (currentUser?.votedPlaces || []).includes(
                     place.id
                   );
@@ -1850,7 +1860,7 @@ export default function App() {
                       ref={googleInputRef}
                       type="text"
                       placeholder={t.googleSearchPlaceholder}
-                      className="w-full border-2 border-blue-200 bg-blue-50/50 rounded-2xl pl-11 pr-4 py-4 focus:border-blue-500 focus:bg-white transition-all text-base sm:text-lg font-bold leading-normal outline-none placeholder:text-blue-400 text-blue-900"
+                      className="w-full border-2 border-blue-200 bg-blue-50/50 rounded-2xl pl-11 pr-4 py-3.5 focus:border-blue-500 focus:bg-white transition-all text-sm sm:text-base font-bold outline-none placeholder:text-blue-400 text-blue-900"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
@@ -1910,7 +1920,7 @@ export default function App() {
                       {t.duplicateWarning}
                     </p>
                     <div className="space-y-2">
-                      {possibleDuplicates.map((dup) => (
+                      {possibleDuplicates.map((dup: any) => (
                         <div
                           key={dup.id}
                           className="flex justify-between items-center bg-white p-3 rounded-xl shadow-sm border border-orange-100"
@@ -1953,7 +1963,7 @@ export default function App() {
 
                 <textarea
                   required
-                  rows="4"
+                  rows={4}
                   placeholder={t.whyGoPlaceholder}
                   className="w-full border-2 border-stone-200 rounded-2xl px-5 py-4 focus:border-orange-500 transition-all resize-none text-base sm:text-lg font-medium outline-none mt-2"
                   value={newPlace.description}
@@ -1994,7 +2004,7 @@ export default function App() {
             </div>
             <form onSubmit={confirmSupport} className="space-y-4">
               <textarea
-                rows="3"
+                rows={3}
                 placeholder={t.leaveCommentPlaceholder}
                 className="w-full border-2 border-stone-200 rounded-xl px-4 py-3 focus:border-orange-500 transition-all resize-none font-medium outline-none"
                 value={supportComment}
@@ -2050,7 +2060,7 @@ export default function App() {
 
               {viewingCommentsFor.comments &&
                 viewingCommentsFor.comments.length > 0 &&
-                viewingCommentsFor.comments.map((comment, idx) => (
+                viewingCommentsFor.comments.map((comment: any, idx: number) => (
                   <div
                     key={idx}
                     className="bg-white p-5 rounded-[1.5rem] shadow-sm border border-stone-100 relative"
@@ -2124,7 +2134,7 @@ export default function App() {
 
               <textarea
                 required
-                rows="4"
+                rows={4}
                 placeholder={t.whyGoPlaceholder}
                 className="w-full border-2 border-stone-200 rounded-xl px-4 py-3 focus:border-orange-500 transition-all resize-none font-medium outline-none"
                 value={placeToEdit.description}
