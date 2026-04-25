@@ -62,7 +62,7 @@ declare global {
 // =====================================================================
 // 1️⃣ INSERISCI QUI LA CHIAVE API DI GOOGLE CLOUD (Serve per Maps/Places)
 // =====================================================================
-const GOOGLE_MAPS_API_KEY = "AIzaSyCX1dzgDDQJ6gotGE5D9JnD7EBqb4Bs9ls";
+const GOOGLE_MAPS_API_KEY = "AIzaSyALxogT9uBTtHAWA1yvOJGxabPA-HbSnHE";
 // =====================================================================
 
 // === TRUCCO PER VERCEL & CANVAS ===
