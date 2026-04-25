@@ -800,7 +800,12 @@ export default function App() {
       showToast("Accesso effettuato! Completa il profilo.");
     } catch (error: any) {
       console.error("Google Auth Error", error);
-      if (error.code === "auth/popup-blocked") {
+      // 🔥 MODALITÀ INVESTIGATORE ATTIVATA 🔥
+      if (error.code === "auth/unauthorized-domain") {
+        setAuthError(
+          `⚠️ DOMINIO NON AUTORIZZATO! Copia ESATTAMENTE questo testo: [ ${window.location.hostname} ] e aggiungilo su Firebase in "Authorized domains".`
+        );
+      } else if (error.code === "auth/popup-blocked") {
         setAuthError(
           "Il browser ha bloccato Google. Autorizza i pop-up per procedere."
         );
