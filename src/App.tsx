@@ -85,7 +85,7 @@ if (!myConfig) {
   // 2️⃣ INSERISCI QUI I CODICI DEL TUO FIREBASE (NON la chiave di Maps!)
   // =====================================================================
   myConfig = {
-    apiKey: "AIzaSyCX1dzgDDQJ6gotGE5D9JnD7EBqb4Bs9ls",
+    apiKey: "AIzaSyDm6K6NewCWzVT3383lesp15JzVVTdbirI",
     authDomain: "cibodizona.firebaseapp.com",
     projectId: "cibodizona",
     storageBucket: "cibodizona.firebasestorage.app",
