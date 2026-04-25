@@ -568,6 +568,7 @@ export default function App() {
   const [imagePreview, setImagePreview] = useState<any>(null);
   const [toast, setToast] = useState<any>(null);
   const [possibleDuplicates, setPossibleDuplicates] = useState<any[]>([]);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   // Stati per Autenticazione Email
   const [emailAuth, setEmailAuth] = useState({ email: "", password: "" });
@@ -587,10 +588,16 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (currentUser && showAuthModal && authModalMode === "login") {
+    if (
+      currentUser &&
+      currentUser.residenceCity &&
+      showAuthModal &&
+      authModalMode === "login"
+    ) {
       setShowAuthModal(false);
+      showToast(`Bentornato ${currentUser.name}!`);
     }
-  }, [currentUser]);
+  }, [currentUser, showAuthModal, authModalMode]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsDbReady(true), 3000);
@@ -626,6 +633,10 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
 
+    if (!user.isAnonymous) {
+      setIsLoadingProfile(true);
+    }
+
     let unsubProfile = () => {};
     const profileRef = doc(
       db,
@@ -639,15 +650,26 @@ export default function App() {
     unsubProfile = onSnapshot(
       profileRef,
       (snap) => {
+        if (!user.isAnonymous) setIsLoadingProfile(false);
+
         if (snap.exists()) {
           const data = snap.data();
           setCurrentUser(data);
           setAuthForm({ name: data.name, residenceCity: data.residenceCity });
         } else {
           setCurrentUser(null);
+          if (user.displayName) {
+            setAuthForm((prev) => ({
+              ...prev,
+              name: user.displayName || prev.name,
+            }));
+          }
         }
       },
-      (err) => console.error("Errore profilo", err)
+      (err) => {
+        if (!user.isAnonymous) setIsLoadingProfile(false);
+        console.error("Errore profilo", err);
+      }
     );
 
     const placesRef = collection(
@@ -791,13 +813,10 @@ export default function App() {
 
   // === FUNZIONI GOOGLE E EMAIL AUTH ===
   const handleGoogleLogin = async () => {
-    showToast("Apertura Google in corso...");
     setAuthError("");
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      setAuthForm((prev) => ({ ...prev, name: result.user.displayName || "" }));
-      showToast("Accesso effettuato! Completa il profilo.");
+      await signInWithPopup(auth, provider);
     } catch (error: any) {
       console.error("Google Auth Error", error);
       // 🔥 MODALITÀ INVESTIGATORE ATTIVATA 🔥
@@ -839,7 +858,6 @@ export default function App() {
           emailAuth.email,
           emailAuth.password
         );
-        showToast("Accesso effettuato con successo!");
       }
     } catch (error: any) {
       console.error("Email Auth Error", error);
@@ -2318,6 +2336,16 @@ export default function App() {
                       : "Nuovo utente? Clicca per creare un account CiboDiZona"}
                   </button>
                 </div>
+              </div>
+            ) : isLoadingProfile ? (
+              <div className="text-center py-12">
+                <Loader2
+                  className="animate-spin text-orange-500 mx-auto mb-4"
+                  size={48}
+                />
+                <p className="text-stone-500 font-bold text-lg">
+                  Recupero dati in corso...
+                </p>
               </div>
             ) : (
               // STATO 2: LOGGATO, DEVE CREARE/MODIFICARE PROFILO
