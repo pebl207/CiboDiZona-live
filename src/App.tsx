@@ -555,6 +555,7 @@ export default function App() {
 
   // Form e UI States
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState("login");
   const [authForm, setAuthForm] = useState({ name: "", residenceCity: "" });
   const [newPlace, setNewPlace] = useState({
     name: "",
@@ -584,6 +585,12 @@ export default function App() {
     setToast(message);
     setTimeout(() => setToast(null), 3500);
   };
+
+  useEffect(() => {
+    if (currentUser && showAuthModal && authModalMode === "login") {
+      setShowAuthModal(false);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsDbReady(true), 3000);
@@ -636,6 +643,8 @@ export default function App() {
           const data = snap.data();
           setCurrentUser(data);
           setAuthForm({ name: data.name, residenceCity: data.residenceCity });
+        } else {
+          setCurrentUser(null);
         }
       },
       (err) => console.error("Errore profilo", err)
@@ -852,6 +861,7 @@ export default function App() {
     setCurrentUser(null);
     showToast("Scollegato con successo!");
     setShowAuthModal(false);
+    setAuthModalMode("login");
     signInAnonymously(auth).catch((e) => console.error(e));
   };
 
@@ -973,6 +983,7 @@ export default function App() {
   const handleAddPlaceClick = () => {
     if (!currentUser) {
       showToast(t.alertNeedAuthSuggest);
+      setAuthModalMode("login");
       setShowAuthModal(true);
       return;
     }
@@ -1181,6 +1192,7 @@ export default function App() {
     const place = places.find((p) => p.id === id);
     if (!currentUser) {
       showToast(t.alertNeedAuthVote);
+      setAuthModalMode("login");
       setShowAuthModal(true);
       return;
     }
@@ -1435,6 +1447,7 @@ export default function App() {
             {currentUser ? (
               <div
                 onClick={() => {
+                  setAuthModalMode("edit");
                   setAuthForm({
                     name: currentUser.name,
                     residenceCity: currentUser.residenceCity,
@@ -1451,7 +1464,10 @@ export default function App() {
               </div>
             ) : (
               <button
-                onClick={() => setShowAuthModal(true)}
+                onClick={() => {
+                  setAuthModalMode("login");
+                  setShowAuthModal(true);
+                }}
                 className="flex items-center gap-1 text-sm font-bold text-stone-600 hover:text-orange-600 transition-colors mr-1 sm:mr-2"
               >
                 <UserCircle size={20} />
