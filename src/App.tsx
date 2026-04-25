@@ -94,6 +94,7 @@ if (!myConfig) {
 const app = getApps().length === 0 ? initializeApp(myConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
+const googleProvider = new GoogleAuthProvider(); // SPOSTATO QUI IN ALTO PER STABILITA'
 
 // @ts-ignore
 const databaseId =
@@ -577,7 +578,6 @@ export default function App() {
   const [viewingCommentsFor, setViewingCommentsFor] = useState(null);
 
   const googleInputRef = useRef(null);
-  const googleProvider = new GoogleAuthProvider(); // AGGIUNTO PER GOOGLE AUTH
 
   const showToast = (message) => {
     setToast(message);
@@ -776,16 +776,27 @@ export default function App() {
 
   // === FUNZIONI GOOGLE AUTH ===
   const handleGoogleLogin = async () => {
+    showToast("Apertura Google in corso...");
+    setAuthError("");
     try {
-      const result = await signInWithPopup(auth, googleProvider);
-      // Pre-compila il form col nome di Google
+      // Istanziamo il provider qui dentro per evitare blocchi del browser
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: "select_account" }); // Forza la richiesta dell'account
+
+      const result = await signInWithPopup(auth, provider);
       setAuthForm((prev) => ({ ...prev, name: result.user.displayName || "" }));
       showToast("Accesso effettuato! Completa il profilo.");
     } catch (error) {
       console.error("Google Auth Error", error);
-      showToast(
-        "Errore di accesso. Assicurati che non ci siano blocchi pop-up."
-      );
+      if (error.code === "auth/popup-blocked") {
+        setAuthError(
+          "Il tuo browser ha bloccato la finestra di Google. Autorizza i pop-up per questo sito."
+        );
+      } else if (error.code === "auth/popup-closed-by-user") {
+        setAuthError("Hai chiuso la finestra di Google prima di accedere.");
+      } else {
+        setAuthError(`Errore Google: ${error.message}`);
+      }
     }
   };
 
@@ -806,26 +817,32 @@ export default function App() {
           emailAuth.email,
           emailAuth.password
         );
-        showToast("Registrazione completata! Completa il profilo.");
+        showToast("Account CiboDiZona creato! Ora completa il profilo.");
       } else {
         await signInWithEmailAndPassword(
           auth,
           emailAuth.email,
           emailAuth.password
         );
-        showToast("Accesso effettuato!");
+        showToast("Accesso effettuato con successo!");
       }
     } catch (error) {
       console.error("Email Auth Error", error);
-      if (error.code === "auth/email-already-in-use")
-        setAuthError("Questa email è già registrata.");
-      else if (
+      if (error.code === "auth/email-already-in-use") {
+        setAuthError(
+          "Questa email è già registrata. Clicca in basso per 'Accedere' invece di creare un nuovo account."
+        );
+      } else if (
         error.code === "auth/invalid-credential" ||
-        error.code === "auth/wrong-password" ||
-        error.code === "auth/user-not-found"
-      )
-        setAuthError("Email o password errati.");
-      else setAuthError("Errore durante l'autenticazione. Riprova.");
+        error.code === "auth/user-not-found" ||
+        error.code === "auth/wrong-password"
+      ) {
+        setAuthError(
+          "Email o password errati. Se sei nuovo, clicca in basso su 'Nuovo utente? Crea un account'."
+        );
+      } else {
+        setAuthError(`Errore di sistema: ${error.message}`); // Mostra l'errore esatto
+      }
     }
   };
 
@@ -2251,7 +2268,7 @@ export default function App() {
                     />
 
                     {authError && (
-                      <p className="text-red-500 text-sm font-bold text-left bg-red-50 p-2 rounded-lg">
+                      <p className="text-red-500 text-sm font-bold text-left bg-red-50 p-3 rounded-lg border border-red-100">
                         {authError}
                       </p>
                     )}
@@ -2261,7 +2278,7 @@ export default function App() {
                       className="w-full bg-stone-900 hover:bg-black text-white font-black text-lg py-3.5 rounded-xl shadow-lg transition-colors"
                     >
                       {isRegistering
-                        ? "Registrati con Email"
+                        ? "Crea Account CiboDiZona"
                         : "Accedi con Email"}
                     </button>
                   </form>
@@ -2272,11 +2289,11 @@ export default function App() {
                       setIsRegistering(!isRegistering);
                       setAuthError("");
                     }}
-                    className="w-full text-sm text-stone-500 hover:text-orange-600 font-bold mt-2 transition-colors"
+                    className="w-full text-sm text-stone-600 hover:text-orange-600 font-bold mt-3 transition-colors p-3 bg-stone-50 rounded-xl border border-stone-200 hover:border-orange-200"
                   >
                     {isRegistering
-                      ? "Hai già un account? Accedi qui"
-                      : "Non hai un account? Registrati qui"}
+                      ? "Hai già un account CiboDiZona? Clicca per accedere"
+                      : "Nuovo utente? Clicca per creare un account CiboDiZona"}
                   </button>
                 </div>
               </div>
