@@ -86,13 +86,11 @@ if (!myConfig) {
   // =====================================================================
   myConfig = {
     apiKey: "AIzaSyCX1dzgDDQJ6gotGE5D9JnD7EBqb4Bs9ls",
-    authDomain: "cibodizona-web.firebaseapp.com",
-    databaseURL:
-      "https://cibodizona-web-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "cibodizona-web",
-    storageBucket: "cibodizona-web.firebasestorage.app",
-    messagingSenderId: "1030287619436",
-    appId: "1:1030287619436:web:98117be6580a612d982f49",
+    authDomain: "cibodizona.firebaseapp.com",
+    projectId: "cibodizona",
+    storageBucket: "cibodizona.firebasestorage.app",
+    messagingSenderId: "1071596932087",
+    appId: "1:1071596932087:web:bd2ee50ebe43ca4ce13cf2",
   };
 }
 
@@ -455,6 +453,90 @@ const initialPlaces = [
     imageUrl:
       "https://images.unsplash.com/photo-1626200419188-f56cedcc2bce?w=500&q=80",
   },
+  {
+    id: "3",
+    city: "Napoli",
+    name: "Trattoria da Nennella",
+    type: "Ristorante",
+    description:
+      "Pasta e patate con la provola indimenticabile. Atmosfera verace e chiassosa, vera Napoli.",
+    creatorName: "Maria",
+    comments: [],
+    votes: 450,
+    address: "Vico Lungo Teatro Nuovo, 103",
+    imageUrl:
+      "https://images.unsplash.com/photo-1621510456681-2330135e5871?w=500&q=80",
+  },
+  {
+    id: "7",
+    city: "Roma",
+    name: "Felice a Testaccio",
+    type: "Ristorante",
+    description:
+      "La migliore Cacio e Pepe di Roma, mantecata direttamente al tavolo.",
+    creatorName: "Claudio",
+    comments: [],
+    votes: 610,
+    address: "Via Mastro Giorgio, 29",
+    imageUrl:
+      "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=500&q=80",
+  },
+  {
+    id: "8",
+    city: "Roma",
+    name: "Trapizzino",
+    type: "Street Food",
+    description:
+      "Tasche di pizza bianca ripiene dei grandi classici romani (pollo alla cacciatora, polpette al sugo).",
+    creatorName: "Sara",
+    comments: [],
+    votes: 520,
+    address: "Piazza Trilussa, 46",
+    imageUrl:
+      "https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=500&q=80",
+  },
+  {
+    id: "12",
+    city: "Bologna",
+    name: "Osteria dell'Orsa",
+    type: "Ristorante",
+    description:
+      "Tagliatelle al ragù spettacolari a prezzi onesti. Sempre pieno di local e studenti.",
+    creatorName: "Matteo",
+    comments: [],
+    votes: 490,
+    address: "Via Mentana, 1",
+    imageUrl:
+      "https://images.unsplash.com/photo-1626844131082-256783844137?w=500&q=80",
+  },
+  {
+    id: "13",
+    city: "Bologna",
+    name: "Cremeria Santo Stefano",
+    type: "Street Food",
+    description:
+      "Non è un pasto, ma il gelato qui è considerato sacro dai bolognesi.",
+    creatorName: "Elena",
+    comments: [],
+    votes: 450,
+    address: "Via Santo Stefano, 70c",
+    imageUrl:
+      "https://images.unsplash.com/photo-1563805042-7684c8a9e9ce?w=500&q=80",
+  },
+  {
+    id: "14",
+    city: "Modena",
+    name: "Trattoria Aldina",
+    type: "Ristorante",
+    description:
+      "Tortellini in brodo da sogno e un bollito che ti rimette al mondo.",
+    creatorName: "Luca",
+    comments: [],
+    votes: 580,
+    address: "Via Luigi Albinelli, 40",
+    imageUrl:
+      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80",
+  },
 ];
 
 export default function App() {
@@ -514,6 +596,7 @@ export default function App() {
   useEffect(() => {
     const initAuth = async () => {
       try {
+        // @ts-ignore
         const token =
           typeof window !== "undefined" &&
           typeof __initial_auth_token !== "undefined"
@@ -601,7 +684,7 @@ export default function App() {
     if (
       currentView !== "add" ||
       !GOOGLE_MAPS_API_KEY ||
-      GOOGLE_MAPS_API_KEY === "INSERISCI_QUI_LA_TUA_CHIAVE_GOOGLE_MAPS"
+      GOOGLE_MAPS_API_KEY === "INSERISCI_QUI_LA_TUA_CHIAVE_MAPS"
     )
       return;
 
@@ -2082,7 +2165,7 @@ export default function App() {
             </button>
 
             {!user || user.isAnonymous ? (
-              // STATO 1: NON LOGGATO
+              // STATO 1: NON LOGGATO (Scelta Email o Google)
               <div className="text-center mb-4 mt-2">
                 <div className="bg-white p-4 rounded-full inline-block mb-4 shadow-md border border-stone-100">
                   <svg
@@ -2115,8 +2198,8 @@ export default function App() {
                   Accedi per continuare
                 </h2>
                 <p className="text-stone-500 font-medium mt-3 text-sm sm:text-base leading-relaxed mb-6">
-                  Per garantire l'autenticità dei consigli e prevenire gli
-                  abusi, ti chiediamo di identificarti.
+                  Per garantire l'autenticità dei consigli, ti chiediamo di
+                  identificarti.
                 </p>
 
                 <div className="space-y-4">
