@@ -1145,6 +1145,17 @@ export default function App() {
     e.preventDefault();
     if (!placeToEdit) return;
 
+    // Ricalcola l'immagine intelligente basandosi sui nuovi testi se la foto precedente era di repertorio
+    const isGeneratedImage =
+      !placeToEdit.imageUrl || placeToEdit.imageUrl.includes("unsplash");
+    const updatedImageUrl = isGeneratedImage
+      ? getSmartImage(
+          placeToEdit.name,
+          placeToEdit.description,
+          placeToEdit.type
+        )
+      : placeToEdit.imageUrl;
+
     if (user) {
       try {
         const placeRef = doc(
@@ -1161,13 +1172,16 @@ export default function App() {
           type: placeToEdit.type,
           address: placeToEdit.address,
           description: placeToEdit.description,
+          imageUrl: updatedImageUrl,
         });
       } catch (error) {}
     }
 
     setPlaces(
       places.map((p) =>
-        p.id === placeToEdit.id ? { ...p, ...placeToEdit } : p
+        p.id === placeToEdit.id
+          ? { ...p, ...placeToEdit, imageUrl: updatedImageUrl }
+          : p
       )
     );
     setPlaceToEdit(null);
@@ -1684,6 +1698,10 @@ export default function App() {
                           src={place.imageUrl || defaultFoodImage}
                           alt={place.name}
                           className="w-full h-full object-cover"
+                          onError={(e: any) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = defaultFoodImage;
+                          }}
                         />
                       </div>
 
