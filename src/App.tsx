@@ -82,12 +82,14 @@ if (configString) {
 
 if (!myConfig) {
   myConfig = {
-    apiKey: "AIzaSyDQ6iBJU128pfFs6LuykZb_m62ED8dwHos",
-    authDomain: "cibodizona.firebaseapp.com",
-    projectId: "cibodizona",
-    storageBucket: "cibodizona.firebasestorage.app",
-    messagingSenderId: "1071596932087",
-    appId: "1:1071596932087:web:bd2ee50ebe43ca4ce13cf2",
+    apiKey: "AIzaSyCX1dzgDDQJ6gotGE5D9JnD7EBqb4Bs9ls",
+    authDomain: "cibodizona-web.firebaseapp.com",
+    databaseURL:
+      "https://cibodizona-web-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cibodizona-web",
+    storageBucket: "cibodizona-web.firebasestorage.app",
+    messagingSenderId: "1030287619436",
+    appId: "1:1030287619436:web:98117be6580a612d982f49",
   };
 }
 
