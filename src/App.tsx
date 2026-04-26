@@ -347,7 +347,7 @@ const getCityCoverImage = (city: string) => {
     modena:
       "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80", // Tortellini
     "reggio emilia":
-      "https://image.pollinations.ai/prompt/top-down%20view%20of%20large%20tortellini%20pasta%20floating%20in%20clear%20hot%20meat%20broth%20soup%20in%20a%20white%20bowl,%20photorealistic%20food%20photography?width=500&height=500&nologo=true", // Trucco AI: "large tortellini" per fare i veri cappelletti!
+      "https://image.pollinations.ai/prompt/Two%20slices%20of%20Erbazzone%20(Italian%20savory%20pie%20with%20spinach%20and%20Parmigiano%20Reggiano)%20beautifully%20plated%20on%20a%20ceramic%20dish,%20resting%20on%20a%20wooden%20bar%20counter%20with%20a%20blurred%20background%20of%20an%20Italian%20cafe,%20high-end%20food%20photography,%20realistic?width=500&height=500&nologo=true", // Erbazzone al bar!
     napoli:
       "https://images.unsplash.com/photo-1534015609462-9721019a31a9?w=500&q=80", // Panorama Napoli
     roma: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80", // Colosseo
@@ -720,12 +720,12 @@ const PlaceCard = ({
             </div>
 
             {/* AREA TITOLO + PULSANTI MODIFICA/ELIMINA VOTO */}
-            <div className="flex flex-wrap items-center gap-2 mb-2.5 mt-2">
-              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight">
+            <div className="flex flex-row items-start justify-between gap-3 mb-2.5 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight pr-2">
                 {place.name}
               </h2>
 
-              <div className="flex items-center gap-1.5 ml-1">
+              <div className="flex items-center gap-1.5 shrink-0 mt-1 sm:mt-0">
                 {isCreator && (
                   <button
                     onClick={() => setPlaceToEdit(place)}
