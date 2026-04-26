@@ -1909,7 +1909,7 @@ export default function App() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {availableCities.map((city) => {
-                  const cityPlaces = places.filter((p: any) => p.city === city);
+                  const cityPlaces = places.filter((p) => p.city === city);
                   const coverImage = getCityCoverImage(city);
 
                   return (
