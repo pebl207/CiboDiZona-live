@@ -2293,11 +2293,11 @@ export default function App() {
                 {/* Se chi l'ha creato originariamente aveva allegato una foto vera (non quella generata dall'AI), la mostriamo qui */}
                 {viewingCommentsFor.imageUrl &&
                   !viewingCommentsFor.imageUrl.includes("unsplash") && (
-                    <div className="mt-4 rounded-xl overflow-hidden border border-stone-100 max-h-48">
+                    <div className="mt-4 rounded-xl overflow-hidden border border-stone-100 h-48 sm:h-56 w-full bg-stone-100">
                       <img
                         src={viewingCommentsFor.imageUrl}
                         alt="Foto principale"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                       />
                     </div>
                   )}
@@ -2327,11 +2327,11 @@ export default function App() {
                       </p>
                     )}
                     {comment.imageUrl && (
-                      <div className="mt-2 rounded-xl overflow-hidden border border-stone-100 max-h-48">
+                      <div className="mt-3 rounded-xl overflow-hidden border border-stone-100 h-48 sm:h-56 w-full bg-stone-100">
                         <img
                           src={comment.imageUrl}
                           alt="Foto allegata"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-center"
                         />
                       </div>
                     )}
