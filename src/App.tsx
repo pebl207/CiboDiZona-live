@@ -367,8 +367,25 @@ const getCityCoverImage = (city: string) => {
     return "https://images.unsplash.com/photo-1623910260408-5c4d05c03dfd?w=500&q=80"; // Parma (Salumi/Borgo)
   if (c === "bari")
     return "https://images.unsplash.com/photo-1601614798670-39ba5b11e8dd?w=500&q=80"; // Bari/Puglia
+  if (c === "reggio emilia")
+    return "https://images.unsplash.com/photo-1582299834114-1184a4b22db9?w=500&q=80"; // Reggio Emilia
+  if (c === "catania")
+    return "https://images.unsplash.com/photo-1552528148-5264cae69a0a?w=500&q=80"; // Catania
+  if (c === "lecce")
+    return "https://images.unsplash.com/photo-1563820228300-4b2a8d6f5195?w=500&q=80"; // Lecce
 
-  return defaultCityImage; // Restituisce un bellissimo vicolo italiano per tutte le altre
+  // Fallback per tutte le altre 90+ province: immagini italiane super colorate e vibranti
+  const vibrantFallbacks = [
+    "https://images.unsplash.com/photo-1533054546877-cdfb93df38ee?w=500&q=80", // Costiera colorata
+    "https://images.unsplash.com/photo-1525624794101-cecdbf2160bb?w=500&q=80", // Paesaggio colline verdi
+    "https://images.unsplash.com/photo-1499678329028-101435549a4e?w=500&q=80", // Scorcio mare sud Italia
+    "https://images.unsplash.com/photo-1504197992764-1c6fa5e7303c?w=500&q=80", // Borgo storico
+    "https://images.unsplash.com/photo-1516222338250-863216ce01ea?w=500&q=80", // Tramonto caldo
+    "https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?w=500&q=80", // Lago nord Italia
+  ];
+
+  const charSum = c.charCodeAt(0) + (c.charCodeAt(c.length - 1) || 0);
+  return vibrantFallbacks[charSum % vibrantFallbacks.length];
 };
 
 // === TRADUZIONI ===
