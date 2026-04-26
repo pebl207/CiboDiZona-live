@@ -7,6 +7,7 @@ import {
   Award,
   Navigation,
   ThumbsUp,
+  ThumbsDown,
   UserCircle,
   X,
   Camera,
@@ -17,7 +18,6 @@ import {
   Lock,
   AlertTriangle,
   Edit2,
-  Trash2,
   Search,
   MessageCircle,
   Send,
@@ -347,7 +347,7 @@ const getCityCoverImage = (city: string) => {
     modena:
       "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80", // Tortellini
     "reggio emilia":
-      "https://image.pollinations.ai/prompt/a%20delicious%20plate%20of%20fresh%20cappelletti%20pasta%20in%20broth%20with%20parmigiano%20reggiano%20food%20photography?width=500&height=500&nologo=true", // Cappelletti in brodo!
+      "https://image.pollinations.ai/prompt/a%20close%20up%20of%20traditional%20italian%20cappelletti%20pasta%20in%20clear%20meat%20broth%20soup%20in%20a%20ceramic%20plate%20food%20photography%20realistic?width=500&height=500&nologo=true", // Cappelletti in brodo veri!
     napoli:
       "https://images.unsplash.com/photo-1534015609462-9721019a31a9?w=500&q=80", // Panorama Napoli
     roma: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80", // Colosseo
@@ -378,7 +378,7 @@ const getCityCoverImage = (city: string) => {
 
   if (mapped[c]) return mapped[c];
 
-  // 🪄 MAGIA AI: Se la provincia non è nella lista sopra, l'AI genererà all'istante una foto di un piatto tipico di quella provincia italiana!
+  // Fallback per tutte le altre 90+ province: immagini generate dall'AI per i piatti tipici
   const encodedCity = encodeURIComponent(city);
   return `https://image.pollinations.ai/prompt/traditional%20delicious%20food%20dish%20from%20${encodedCity}%20italy%20restaurant%20photography?width=500&height=500&nologo=true`;
 };
@@ -447,8 +447,7 @@ const translations: any = {
     alertVoteLimit:
       "Hai raggiunto il limite! Hai a disposizione un massimo di 5 consigli.",
     voteAdded: "Consiglio aggiunto! 🏅",
-    voteRemoved:
-      "Consiglio ritirato. Hai recuperato un voto da poter riutilizzare!",
+    voteRemoved: "Voto ritirato. Hai recuperato un voto da poter riutilizzare!",
     duplicateWarning:
       "Attenzione: questo locale potrebbe essere già presente in classifica!",
     supportThis: "Sostieni questo",
@@ -457,9 +456,6 @@ const translations: any = {
     openMap: "Apri in Maps",
     editPlaceTitle: "Modifica Consiglio",
     saveChanges: "Salva Modifiche",
-    confirmDelete:
-      "Sei sicuro di voler eliminare questo locale dai tuoi consigli? Se lo elimini, recupererai il voto speso.",
-    placeDeleted: "Locale rimosso dai consigli e voto recuperato!",
     changesSaved: "Modifiche salvate! ✅",
     readComments: "Leggi i consigli dei Local",
     leaveCommentTitle: "Sostieni il locale",
@@ -540,9 +536,6 @@ const translations: any = {
     openMap: "Open Maps",
     editPlaceTitle: "Edit Place",
     saveChanges: "Save Changes",
-    confirmDelete:
-      "Are you sure you want to delete this recommendation? If you delete it, you will get your vote back.",
-    placeDeleted: "Recommendation deleted and vote recovered!",
     changesSaved: "Changes saved! ✅",
     readComments: "Read Local's tips",
     leaveCommentTitle: "Support this place",
@@ -566,7 +559,6 @@ const PlaceCard = ({
   currentUser,
   t,
   setPlaceToEdit,
-  handleDeletePlace,
   handleVoteClick,
   setViewingCommentsFor,
 }: any) => {
@@ -616,25 +608,6 @@ const PlaceCard = ({
 
   return (
     <div className="bg-white rounded-[2rem] p-4 shadow-md border border-stone-100 flex flex-col sm:flex-row gap-5 sm:gap-6 relative group hover:shadow-lg transition-shadow">
-      {isCreator && (
-        <div className="absolute top-4 right-4 flex gap-2 z-20">
-          <button
-            onClick={() => setPlaceToEdit(place)}
-            className="bg-white/90 backdrop-blur text-stone-500 p-2.5 rounded-xl shadow-sm hover:text-blue-600 hover:bg-blue-50 transition-colors"
-            title="Modifica"
-          >
-            <Edit2 size={16} />
-          </button>
-          <button
-            onClick={() => handleDeletePlace(place.id)}
-            className="bg-white/90 backdrop-blur text-stone-500 p-2.5 rounded-xl shadow-sm hover:text-red-600 hover:bg-red-50 transition-colors"
-            title="Elimina"
-          >
-            <Trash2 size={16} />
-          </button>
-        </div>
-      )}
-
       {/* Versione Mobile Rank */}
       <div className="absolute top-6 left-6 z-10 sm:hidden">
         <div
@@ -700,7 +673,6 @@ const PlaceCard = ({
         {/* Mostra puntini e frecce SOLO se ci sono più di 1 foto */}
         {allImages.length > 1 && (
           <>
-            {/* Frecce: nascoste su mobile (hidden), visibili solo su PC (sm:flex) */}
             <button
               onClick={prevImg}
               className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm z-10"
@@ -714,7 +686,6 @@ const PlaceCard = ({
               <ChevronRight size={20} />
             </button>
 
-            {/* Puntini in basso: visibili sempre se ci sono >1 foto */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-md">
               {allImages.map((_, i) => (
                 <div
@@ -735,7 +706,7 @@ const PlaceCard = ({
 
       <div className="flex-1 py-1 flex flex-col justify-center">
         <div className="flex justify-between items-start mb-2">
-          <div>
+          <div className="w-full">
             <div className="flex flex-wrap items-center gap-2 mb-2 pr-16">
               <span
                 className={`text-[11px] sm:text-xs font-black px-2.5 py-1.5 rounded-lg uppercase tracking-wide ${
@@ -747,9 +718,41 @@ const PlaceCard = ({
                 {place.type === "Ristorante" ? t.restaurant : t.streetFood}
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight mb-2.5 mt-2">
-              {place.name}
-            </h2>
+
+            {/* AREA TITOLO + PULSANTI MODIFICA/ELIMINA VOTO */}
+            <div className="flex flex-wrap items-center gap-2 mb-2.5 mt-2">
+              <h2 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight">
+                {place.name}
+              </h2>
+
+              <div className="flex items-center gap-1.5 ml-1">
+                {isCreator && (
+                  <button
+                    onClick={() => setPlaceToEdit(place)}
+                    className="text-stone-400 hover:text-blue-600 bg-white border border-stone-200 hover:border-blue-200 hover:bg-blue-50 p-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-sm"
+                    title="Modifica locale"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                )}
+
+                {isVotedByMe && (
+                  <button
+                    onClick={() => handleVoteClick(place.id)}
+                    className="text-stone-400 hover:text-red-600 bg-white border border-stone-200 hover:border-red-200 hover:bg-red-50 px-2 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 shadow-sm group/unlike"
+                    title="Ritira il tuo voto"
+                  >
+                    <ThumbsDown
+                      size={16}
+                      className="group-hover/unlike:scale-110 transition-transform text-red-500"
+                    />
+                    <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-red-500">
+                      Ritira Voto
+                    </span>
+                  </button>
+                )}
+              </div>
+            </div>
 
             <a
               href={googleMapsLink}
@@ -781,35 +784,25 @@ const PlaceCard = ({
         )}
       </div>
 
+      {/* PULSANTE VOTA (A DESTRA) */}
       <div className="flex sm:flex-col items-center justify-center sm:justify-center gap-3 sm:min-w-[8rem] sm:w-auto shrink-0 bg-stone-50 rounded-[1.5rem] p-4 sm:p-3 mt-2 sm:mt-0">
         <button
-          onClick={() => handleVoteClick(place.id)}
-          className={`text-white p-4 sm:p-3 rounded-2xl shadow-lg transition-all active:scale-90 flex items-center justify-center
+          onClick={() => {
+            if (!isVotedByMe) handleVoteClick(place.id);
+          }}
+          className={`text-white p-4 sm:p-3 rounded-2xl shadow-lg transition-all flex items-center justify-center
             ${
               isVotedByMe
-                ? "bg-green-500 hover:bg-red-500 shadow-green-200"
-                : "bg-orange-500 hover:bg-orange-600 hover:-translate-y-1 shadow-orange-200"
+                ? "bg-green-500 shadow-green-200 cursor-default"
+                : "bg-orange-500 hover:bg-orange-600 hover:-translate-y-1 shadow-orange-200 cursor-pointer active:scale-90"
             }`}
           title={
             isVotedByMe
-              ? "Ritira il tuo consiglio"
+              ? "Hai consigliato questo locale (Usa il pollice rosso sul nome per ritirare il voto)"
               : "Aggiungi ai tuoi consigli"
           }
         >
-          {isVotedByMe ? (
-            <div className="relative group/btn h-6 w-6 flex items-center justify-center">
-              <ThumbsUp
-                className="absolute fill-white group-hover/btn:opacity-0 transition-opacity"
-                size={24}
-              />
-              <X
-                className="absolute text-white opacity-0 group-hover/btn:opacity-100 transition-opacity"
-                size={24}
-              />
-            </div>
-          ) : (
-            <ThumbsUp className="fill-white" size={24} />
-          )}
+          <ThumbsUp className="fill-white" size={24} />
         </button>
 
         <div className="text-center mt-1">
@@ -1061,7 +1054,6 @@ export default function App() {
               }. La tua zona è ${currentUser.residenceCity}.`
             );
           }
-          // ==========================================
 
           setNewPlace((prev) => ({
             ...prev,
@@ -1131,7 +1123,6 @@ export default function App() {
     }
   };
 
-  // === FUNZIONI GOOGLE E EMAIL AUTH ===
   const handleGoogleLogin = async () => {
     setAuthError("");
     try {
@@ -1139,7 +1130,6 @@ export default function App() {
       await signInWithPopup(auth, provider);
     } catch (error: any) {
       console.error("Google Auth Error", error);
-      // 🔥 MODALITÀ INVESTIGATORE ATTIVATA 🔥
       if (error.code === "auth/unauthorized-domain") {
         setAuthError(
           `⚠️ DOMINIO NON AUTORIZZATO! Copia ESATTAMENTE questo testo: [ ${window.location.hostname} ] e aggiungilo su Firebase in "Authorized domains".`
@@ -1469,37 +1459,6 @@ export default function App() {
     });
     setImagePreview(null);
     setPossibleDuplicates([]);
-  };
-
-  const handleDeletePlace = async (id: string) => {
-    if (!window.confirm(t.confirmDelete)) return;
-
-    if (user) {
-      try {
-        await deleteDoc(
-          doc(db, "artifacts", databaseId, "public", "data", "places", id)
-        );
-
-        const userVotes = currentUser.votedPlaces || [];
-        if (userVotes.includes(id)) {
-          const newVotesArray = userVotes.filter((v: string) => v !== id);
-          const profileRef = doc(
-            db,
-            "artifacts",
-            databaseId,
-            "users",
-            user.uid,
-            "profile",
-            "data"
-          );
-          await updateDoc(profileRef, { votedPlaces: newVotesArray });
-          setCurrentUser({ ...currentUser, votedPlaces: newVotesArray });
-        }
-      } catch (error) {}
-    }
-
-    setPlaces(places.filter((p) => p.id !== id));
-    showToast(t.placeDeleted);
   };
 
   const handleUpdatePlace = async (e: any) => {
@@ -1922,7 +1881,6 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {availableCities.map((city) => {
                   const cityPlaces = places.filter((p: any) => p.city === city);
-                  // 👇 QUI ERA IL BUG! Ora richiama sempre la funzione giusta!
                   const coverImage = getCityCoverImage(city);
 
                   return (
@@ -2032,7 +1990,6 @@ export default function App() {
                       currentUser={currentUser}
                       t={t}
                       setPlaceToEdit={setPlaceToEdit}
-                      handleDeletePlace={handleDeletePlace}
                       handleVoteClick={handleVoteClick}
                       setViewingCommentsFor={setViewingCommentsFor}
                     />
@@ -2347,7 +2304,8 @@ export default function App() {
                 </p>
                 {/* Se chi l'ha creato originariamente aveva allegato una foto vera (non quella generata dall'AI), la mostriamo qui */}
                 {viewingCommentsFor.imageUrl &&
-                  !viewingCommentsFor.imageUrl.includes("unsplash") && (
+                  !viewingCommentsFor.imageUrl.includes("unsplash") &&
+                  !viewingCommentsFor.imageUrl.includes("pollinations") && (
                     <div className="mt-4 rounded-xl overflow-hidden border border-stone-100 h-48 sm:h-56 w-full bg-stone-100">
                       <img
                         src={viewingCommentsFor.imageUrl}
@@ -2418,7 +2376,8 @@ export default function App() {
                 <div className="relative group border-2 border-dashed border-stone-300 rounded-xl overflow-hidden hover:border-orange-500 transition-colors bg-stone-50 h-32 flex flex-col items-center justify-center text-center px-4">
                   {placeToEdit.newUploadedImage ||
                   (placeToEdit.imageUrl &&
-                    !placeToEdit.imageUrl.includes("unsplash")) ? (
+                    !placeToEdit.imageUrl.includes("unsplash") &&
+                    !placeToEdit.imageUrl.includes("pollinations")) ? (
                     <img
                       src={placeToEdit.newUploadedImage || placeToEdit.imageUrl}
                       alt="Anteprima"
@@ -2650,16 +2609,6 @@ export default function App() {
                       : "Nuovo utente? Clicca per creare un account CiboDiZona"}
                   </button>
                 </div>
-              </div>
-            ) : isLoadingProfile ? (
-              <div className="text-center py-12">
-                <Loader2
-                  className="animate-spin text-orange-500 mx-auto mb-4"
-                  size={48}
-                />
-                <p className="text-stone-500 font-bold text-lg">
-                  Recupero dati in corso...
-                </p>
               </div>
             ) : (
               // STATO 2: LOGGATO, DEVE CREARE/MODIFICARE PROFILO
