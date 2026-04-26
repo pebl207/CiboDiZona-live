@@ -568,15 +568,49 @@ const PlaceCard = ({
   // Protezione in caso una foto venga eliminata
   const safeImgIndex = imgIndex >= allImages.length ? 0 : imgIndex;
 
-  const nextImg = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const nextImg = (e?: any) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setImgIndex((i) => (i + 1) % allImages.length);
   };
-  const prevImg = (e: any) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const prevImg = (e?: any) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     setImgIndex((i) => (i - 1 + allImages.length) % allImages.length);
+  };
+
+  // === LOGICA SWIPE (STILE INSTAGRAM) ===
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+
+  const handleTouchStart = (e: any) => {
+    setTouchStart(e.targetTouches[0].clientX);
+    setTouchEnd(0);
+  };
+
+  const handleTouchMove = (e: any) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50; // Se scorri verso sinistra -> Prossima foto
+    const isRightSwipe = distance < -50; // Se scorri verso destra -> Foto precedente
+
+    if (isLeftSwipe && allImages.length > 1) {
+      nextImg();
+    }
+    if (isRightSwipe && allImages.length > 1) {
+      prevImg();
+    }
+    // Resetta le variabili al termine del tocco
+    setTouchStart(0);
+    setTouchEnd(0);
   };
 
   const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
@@ -628,7 +662,13 @@ const PlaceCard = ({
         </span>
       </div>
 
-      <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden rounded-[1.5rem] relative bg-stone-100 group/carousel">
+      {/* CONTENITORE FOTO CON SWIPE */}
+      <div
+        className="w-full sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden rounded-[1.5rem] relative bg-stone-100 group/carousel"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
           src={allImages[safeImgIndex] || defaultFoodImage}
           alt={place.name}
@@ -638,20 +678,24 @@ const PlaceCard = ({
             e.currentTarget.src = defaultFoodImage;
           }}
         />
+        {/* Mostra puntini e frecce SOLO se ci sono più di 1 foto */}
         {allImages.length > 1 && (
           <>
+            {/* Frecce: nascoste su mobile (hidden), visibili solo su PC (sm:flex) */}
             <button
               onClick={prevImg}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm"
+              className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm"
             >
               <ChevronLeft size={20} />
             </button>
             <button
               onClick={nextImg}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm"
+              className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm"
             >
               <ChevronRight size={20} />
             </button>
+
+            {/* Puntini in basso: visibili sempre se ci sono >1 foto */}
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-md">
               {allImages.map((_, i) => (
                 <div
