@@ -1008,17 +1008,54 @@ export default function App() {
         {
           types: ["establishment", "geocode"],
           componentRestrictions: { country: "it" },
-          fields: ["name", "formatted_address"],
+          fields: ["name", "formatted_address", "address_components"],
         }
       );
 
       autocomplete.addListener("place_changed", () => {
         const placeInfo = autocomplete.getPlace();
         if (placeInfo && placeInfo.name) {
+          // === CONTROLLO PROVINCIA INTELLIGENTE ===
+          let isMatch = false;
+          let foundArea = "";
+          if (placeInfo.address_components && currentUser?.residenceCity) {
+            for (const comp of placeInfo.address_components) {
+              const ln = comp.long_name.toLowerCase();
+              if (
+                comp.types.includes("administrative_area_level_2") ||
+                comp.types.includes("locality")
+              ) {
+                if (!foundArea) foundArea = comp.long_name;
+                if (ln.includes(currentUser.residenceCity.toLowerCase())) {
+                  isMatch = true;
+                  break;
+                }
+              }
+            }
+          } else if (currentUser?.residenceCity) {
+            isMatch = placeInfo.formatted_address
+              ?.toLowerCase()
+              .includes(currentUser.residenceCity.toLowerCase());
+          }
+
+          const resolvedCity = isMatch
+            ? currentUser.residenceCity
+            : foundArea || "Altra Provincia";
+
+          if (!isMatch && currentUser?.residenceCity) {
+            showToast(
+              `⚠️ Locale fuori zona! Trovato a ${
+                foundArea || "un'altra provincia"
+              }. La tua zona è ${currentUser.residenceCity}.`
+            );
+          }
+          // ==========================================
+
           setNewPlace((prev) => ({
             ...prev,
             name: placeInfo.name,
             address: placeInfo.formatted_address || "",
+            city: resolvedCity,
           }));
           checkForDuplicates(placeInfo.name);
         }
@@ -1048,7 +1085,7 @@ export default function App() {
         googleInputRef.current.removeAttribute("data-has-places");
       }
     };
-  }, [currentView]);
+  }, [currentView, currentUser]);
 
   const availableCities = useMemo(() => {
     const cities = places.map((p: any) => p.city);
@@ -1349,7 +1386,9 @@ export default function App() {
     if (
       newPlace.city.toLowerCase() !== currentUser.residenceCity.toLowerCase()
     ) {
-      showToast(t.alertWrongCitySuggest);
+      showToast(
+        `${t.alertWrongCitySuggest} (Hai selezionato: ${newPlace.city})`
+      );
       return;
     }
 
@@ -1455,10 +1494,13 @@ export default function App() {
     e.preventDefault();
     if (!placeToEdit) return;
 
-    // Ricalcola l'immagine intelligente basandosi sui nuovi testi se la foto precedente era di repertorio
+    // Ricalcola l'immagine intelligente o usa quella appena caricata
     const isGeneratedImage =
-      !placeToEdit.imageUrl || placeToEdit.imageUrl.includes("unsplash");
-    const updatedImageUrl = isGeneratedImage
+      !placeToEdit.newUploadedImage &&
+      (!placeToEdit.imageUrl || placeToEdit.imageUrl.includes("unsplash"));
+    const updatedImageUrl = placeToEdit.newUploadedImage
+      ? placeToEdit.newUploadedImage
+      : isGeneratedImage
       ? getSmartImage(
           placeToEdit.name,
           placeToEdit.description,
@@ -2356,6 +2398,48 @@ export default function App() {
               <Edit2 size={24} className="text-orange-500" /> {t.editPlaceTitle}
             </h2>
             <form onSubmit={handleUpdatePlace} className="space-y-4">
+              <div className="mb-2">
+                <label className="block text-xs font-bold text-stone-500 mb-2 uppercase">
+                  Modifica Foto
+                </label>
+                <div className="relative group border-2 border-dashed border-stone-300 rounded-xl overflow-hidden hover:border-orange-500 transition-colors bg-stone-50 h-32 flex flex-col items-center justify-center text-center px-4">
+                  {placeToEdit.newUploadedImage ||
+                  (placeToEdit.imageUrl &&
+                    !placeToEdit.imageUrl.includes("unsplash")) ? (
+                    <img
+                      src={placeToEdit.newUploadedImage || placeToEdit.imageUrl}
+                      alt="Anteprima"
+                      className="absolute inset-0 w-full h-full object-cover z-0"
+                    />
+                  ) : (
+                    <div className="z-10 flex flex-col items-center">
+                      <ImageIcon size={28} className="text-stone-300 mb-2" />
+                      <p className="text-stone-600 font-medium text-xs px-2">
+                        Clicca per inserire la tua foto (sostituirà l'immagine
+                        AI)
+                      </p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e: any) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev: any) =>
+                          setPlaceToEdit({
+                            ...placeToEdit,
+                            newUploadedImage: ev.target.result,
+                          });
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                  />
+                </div>
+              </div>
+
               <input
                 required
                 type="text"
