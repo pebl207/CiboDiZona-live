@@ -1725,12 +1725,14 @@ export default function App() {
                   });
                   setShowAuthModal(true);
                 }}
-                className="flex items-center gap-2 mr-1 sm:mr-2 bg-orange-100 px-3 py-1.5 rounded-full cursor-pointer hover:bg-orange-200 transition-colors"
+                className="flex items-center gap-1.5 sm:gap-2 mr-1 sm:mr-2 bg-orange-100 px-2.5 sm:px-3 py-1.5 rounded-full cursor-pointer hover:bg-orange-200 transition-colors"
               >
-                <UserCircle size={18} className="text-orange-600" />
-                <span className="text-sm font-bold text-orange-800 hidden sm:inline">
-                  {currentUser.name} (
-                  {5 - (currentUser.votedPlaces?.length || 0)})
+                <UserCircle size={18} className="text-orange-600 shrink-0" />
+                <span className="text-xs sm:text-sm font-bold text-orange-800 truncate max-w-[70px] sm:max-w-[150px]">
+                  {currentUser.name}
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-orange-800 shrink-0">
+                  ({5 - (currentUser.votedPlaces?.length || 0)})
                 </span>
               </div>
             ) : (
