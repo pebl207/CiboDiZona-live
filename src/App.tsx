@@ -341,51 +341,46 @@ const ITALIAN_PROVINCES = [
 // === IMMAGINI DELLE CARTOLINE DELLE CITTA' ===
 const getCityCoverImage = (city: string) => {
   const c = city.toLowerCase();
-  if (c === "modena")
-    return "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80"; // Tortellini
-  if (c === "napoli")
-    return "https://images.unsplash.com/photo-1534015609462-9721019a31a9?w=500&q=80"; // Panorama Napoli
-  if (c === "roma")
-    return "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80"; // Colosseo
-  if (c === "bologna")
-    return "https://images.unsplash.com/photo-1516483638261-f4085ee6e409?w=500&q=80"; // Bologna
-  if (c === "milano")
-    return "https://images.unsplash.com/photo-1629851603513-1f196a090757?w=500&q=80"; // Duomo di Milano
-  if (c === "firenze")
-    return "https://images.unsplash.com/photo-1543429156-f0db2b535d47?w=500&q=80"; // Firenze
-  if (c === "torino")
-    return "https://images.unsplash.com/photo-1625805565576-9d3fc5d9f0f9?w=500&q=80"; // Torino
-  if (c === "palermo")
-    return "https://images.unsplash.com/photo-1583095123989-138378d38401?w=500&q=80"; // Palermo
-  if (c === "venezia")
-    return "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=500&q=80"; // Venezia
-  if (c === "genova")
-    return "https://images.unsplash.com/photo-1627014605658-36f7eb326fc6?w=500&q=80"; // Genova
-  if (c === "verona")
-    return "https://images.unsplash.com/photo-1610488425254-8c88691f11e9?w=500&q=80"; // Verona
-  if (c === "parma")
-    return "https://images.unsplash.com/photo-1623910260408-5c4d05c03dfd?w=500&q=80"; // Parma (Salumi/Borgo)
-  if (c === "bari")
-    return "https://images.unsplash.com/photo-1601614798670-39ba5b11e8dd?w=500&q=80"; // Bari/Puglia
-  if (c === "reggio emilia")
-    return "https://images.unsplash.com/photo-1582299834114-1184a4b22db9?w=500&q=80"; // Reggio Emilia
-  if (c === "catania")
-    return "https://images.unsplash.com/photo-1552528148-5264cae69a0a?w=500&q=80"; // Catania
-  if (c === "lecce")
-    return "https://images.unsplash.com/photo-1563820228300-4b2a8d6f5195?w=500&q=80"; // Lecce
 
-  // Fallback per tutte le altre 90+ province: immagini italiane super colorate e vibranti
-  const vibrantFallbacks = [
-    "https://images.unsplash.com/photo-1533054546877-cdfb93df38ee?w=500&q=80", // Costiera colorata
-    "https://images.unsplash.com/photo-1525624794101-cecdbf2160bb?w=500&q=80", // Paesaggio colline verdi
-    "https://images.unsplash.com/photo-1499678329028-101435549a4e?w=500&q=80", // Scorcio mare sud Italia
-    "https://images.unsplash.com/photo-1504197992764-1c6fa5e7303c?w=500&q=80", // Borgo storico
-    "https://images.unsplash.com/photo-1516222338250-863216ce01ea?w=500&q=80", // Tramonto caldo
-    "https://images.unsplash.com/photo-1605806616949-1e87b487cb2a?w=500&q=80", // Lago nord Italia
-  ];
+  // Immagini manuali per le città principali
+  const mapped: any = {
+    modena:
+      "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80", // Tortellini
+    "reggio emilia":
+      "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=500&q=80", // Cappelletti / Pasta fresca
+    napoli:
+      "https://images.unsplash.com/photo-1534015609462-9721019a31a9?w=500&q=80", // Panorama Napoli
+    roma: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80", // Colosseo
+    bologna:
+      "https://images.unsplash.com/photo-1516483638261-f4085ee6e409?w=500&q=80", // Bologna
+    milano:
+      "https://images.unsplash.com/photo-1629851603513-1f196a090757?w=500&q=80", // Duomo di Milano
+    firenze:
+      "https://images.unsplash.com/photo-1543429156-f0db2b535d47?w=500&q=80", // Firenze
+    torino:
+      "https://images.unsplash.com/photo-1625805565576-9d3fc5d9f0f9?w=500&q=80", // Torino
+    palermo:
+      "https://images.unsplash.com/photo-1583095123989-138378d38401?w=500&q=80", // Palermo
+    venezia:
+      "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=500&q=80", // Venezia
+    genova:
+      "https://images.unsplash.com/photo-1627014605658-36f7eb326fc6?w=500&q=80", // Genova
+    verona:
+      "https://images.unsplash.com/photo-1610488425254-8c88691f11e9?w=500&q=80", // Verona
+    parma:
+      "https://images.unsplash.com/photo-1623910260408-5c4d05c03dfd?w=500&q=80", // Parma
+    bari: "https://images.unsplash.com/photo-1601614798670-39ba5b11e8dd?w=500&q=80", // Bari
+    catania:
+      "https://images.unsplash.com/photo-1552528148-5264cae69a0a?w=500&q=80", // Catania
+    lecce:
+      "https://images.unsplash.com/photo-1563820228300-4b2a8d6f5195?w=500&q=80", // Lecce
+  };
 
-  const charSum = c.charCodeAt(0) + (c.charCodeAt(c.length - 1) || 0);
-  return vibrantFallbacks[charSum % vibrantFallbacks.length];
+  if (mapped[c]) return mapped[c];
+
+  // 🪄 MAGIA AI: Se la provincia non è nella lista sopra, l'AI genererà all'istante una foto di un piatto tipico di quella provincia italiana!
+  const encodedCity = encodeURIComponent(city);
+  return `https://image.pollinations.ai/prompt/traditional%20delicious%20food%20dish%20from%20${encodedCity}%20italy%20restaurant%20photography?width=500&height=500&nologo=true`;
 };
 
 // === TRADUZIONI ===
@@ -1926,7 +1921,8 @@ export default function App() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                 {availableCities.map((city) => {
-                  const cityPlaces = places.filter((p) => p.city === city);
+                  const cityPlaces = places.filter((p: any) => p.city === city);
+                  // 👇 QUI ERA IL BUG! Ora richiama sempre la funzione giusta!
                   const coverImage = getCityCoverImage(city);
 
                   return (
