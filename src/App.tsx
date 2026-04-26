@@ -347,7 +347,7 @@ const getCityCoverImage = (city: string) => {
     modena:
       "https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=500&q=80", // Tortellini
     "reggio emilia":
-      "https://image.pollinations.ai/prompt/Macro%20close-up%20of%20handmade%20raw%20cappelletto%20pasta%2C%20shaped%20like%20a%20tiny%20hat%20with%20a%20wide%20flat%20brim%20and%20a%20folded%20central%20peak%2C%20yellow%20egg%20dough%2C%20on%20a%20wooden%20board%20with%20flour%2C%20photorealistic?width=500&height=500&nologo=true", // Cappelletto fedele su spianatoia
+      "https://image.pollinations.ai/prompt/Top-down%20close-up%20of%20large%20green%20tortellini%20pasta%2C%20handmade%2C%20resting%20on%20a%20rustic%20wooden%20board%20with%20white%20flour%2C%20photorealistic%20food%20photography?width=500&height=500&nologo=true", // Grandi tortellini verdi
     napoli:
       "https://images.unsplash.com/photo-1534015609462-9721019a31a9?w=500&q=80", // Panorama Napoli
     roma: "https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=500&q=80", // Colosseo
