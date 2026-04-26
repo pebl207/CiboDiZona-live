@@ -625,7 +625,17 @@ const PlaceCard = ({
 
       {/* Versione Mobile Rank */}
       <div className="absolute top-6 left-6 z-10 sm:hidden">
-        <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-md font-black text-lg text-orange-600 border border-white/50">
+        <div
+          className={`bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-md font-black text-xl border border-white/50 ${
+            index === 0
+              ? "text-yellow-500"
+              : index === 1
+              ? "text-slate-400"
+              : index === 2
+              ? "text-amber-600"
+              : "text-stone-400"
+          }`}
+        >
           {index + 1}°
         </div>
       </div>
