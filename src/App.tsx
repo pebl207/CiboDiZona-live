@@ -21,6 +21,8 @@ import {
   Search,
   MessageCircle,
   Send,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // === FIREBASE IMPORTS ===
@@ -457,6 +459,7 @@ const translations: any = {
     commentsModalTitle: "Cosa dicono i Local",
     creatorTag: "Primo Local a consigliarlo",
     supporterTag: "Local che lo consiglia",
+    supportPhotoLabel: "Aggiungi una tua foto (opzionale)",
   },
   en: {
     appName: "CiboDiZona",
@@ -537,7 +540,226 @@ const translations: any = {
     commentsModalTitle: "What Locals say",
     creatorTag: "First Local to recommend it",
     supporterTag: "Local recommending it",
+    supportPhotoLabel: "Add your photo (optional)",
   },
+};
+
+// === NUOVO COMPONENTE PER LA CARD DEL RISTORANTE (Gestisce il Carosello) ===
+const PlaceCard = ({
+  place,
+  index,
+  isVotedByMe,
+  isCreator,
+  user,
+  currentUser,
+  t,
+  setPlaceToEdit,
+  handleDeletePlace,
+  handleVoteClick,
+  setViewingCommentsFor,
+}: any) => {
+  // Raccogliamo la foto principale + tutte le foto caricate nei commenti
+  const allImages = [
+    place.imageUrl,
+    ...(place.comments || []).map((c: any) => c.imageUrl),
+  ].filter(Boolean);
+  const [imgIndex, setImgIndex] = useState(0);
+
+  // Protezione in caso una foto venga eliminata
+  const safeImgIndex = imgIndex >= allImages.length ? 0 : imgIndex;
+
+  const nextImg = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setImgIndex((i) => (i + 1) % allImages.length);
+  };
+  const prevImg = (e: any) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setImgIndex((i) => (i - 1 + allImages.length) % allImages.length);
+  };
+
+  const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    place.name + " " + place.city
+  )}`;
+
+  return (
+    <div className="bg-white rounded-[2rem] p-4 shadow-md border border-stone-100 flex flex-col sm:flex-row gap-5 sm:gap-6 relative group hover:shadow-lg transition-shadow">
+      {isCreator && (
+        <div className="absolute top-4 right-4 flex gap-2 z-20">
+          <button
+            onClick={() => setPlaceToEdit(place)}
+            className="bg-white/90 backdrop-blur text-stone-500 p-2.5 rounded-xl shadow-sm hover:text-blue-600 hover:bg-blue-50 transition-colors"
+            title="Modifica"
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            onClick={() => handleDeletePlace(place.id)}
+            className="bg-white/90 backdrop-blur text-stone-500 p-2.5 rounded-xl shadow-sm hover:text-red-600 hover:bg-red-50 transition-colors"
+            title="Elimina"
+          >
+            <Trash2 size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Versione Mobile Rank */}
+      <div className="absolute top-6 left-6 z-10 sm:hidden">
+        <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-md font-black text-lg text-orange-600 border border-white/50">
+          {index + 1}°
+        </div>
+      </div>
+
+      {/* Versione Desktop Rank */}
+      <div className="hidden sm:flex flex-col items-center justify-center w-16 shrink-0">
+        <span
+          className={`text-6xl font-black drop-shadow-sm ${
+            index === 0
+              ? "text-yellow-400"
+              : index === 1
+              ? "text-stone-300"
+              : index === 2
+              ? "text-amber-600"
+              : "text-stone-200"
+          }`}
+        >
+          {index + 1}°
+        </span>
+      </div>
+
+      <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden rounded-[1.5rem] relative bg-stone-100 group/carousel">
+        <img
+          src={allImages[safeImgIndex] || defaultFoodImage}
+          alt={place.name}
+          className="w-full h-full object-cover transition-transform duration-500"
+          onError={(e: any) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = defaultFoodImage;
+          }}
+        />
+        {allImages.length > 1 && (
+          <>
+            <button
+              onClick={prevImg}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm"
+            >
+              <ChevronLeft size={20} />
+            </button>
+            <button
+              onClick={nextImg}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/40 hover:bg-black/60 text-white p-1.5 rounded-full opacity-0 group-hover/carousel:opacity-100 transition-all backdrop-blur-sm"
+            >
+              <ChevronRight size={20} />
+            </button>
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-black/20 px-2 py-1 rounded-full backdrop-blur-md">
+              {allImages.map((_, i) => (
+                <div
+                  key={i}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setImgIndex(i);
+                  }}
+                  className={`w-1.5 h-1.5 rounded-full cursor-pointer transition-all ${
+                    i === safeImgIndex ? "bg-white scale-125" : "bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="flex-1 py-1 flex flex-col justify-center">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-2 pr-16">
+              <span
+                className={`text-[11px] sm:text-xs font-black px-2.5 py-1.5 rounded-lg uppercase tracking-wide ${
+                  place.type === "Ristorante"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                {place.type === "Ristorante" ? t.restaurant : t.streetFood}
+              </span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight mb-2.5 mt-2">
+              {place.name}
+            </h2>
+
+            <a
+              href={googleMapsLink}
+              target="_blank"
+              rel="noreferrer"
+              className="text-stone-500 hover:text-orange-600 text-sm font-medium flex items-start gap-1.5 leading-relaxed transition-colors w-fit group/map mt-1"
+            >
+              <MapPin size={16} className="shrink-0 mt-0.5" />
+              <span className="underline decoration-transparent group-hover/map:decoration-orange-600">
+                {place.address || place.city}
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <p className="text-stone-700 text-base sm:text-lg mt-3 bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50 font-medium leading-relaxed">
+          "{place.description}"
+        </p>
+
+        {place.creatorName && (
+          <button
+            onClick={() => setViewingCommentsFor(place)}
+            className="mt-4 flex items-center gap-2 text-stone-500 hover:text-orange-600 font-bold text-sm bg-white border border-stone-200 px-4 py-2 rounded-xl w-fit transition-colors shadow-sm"
+          >
+            <MessageCircle size={16} />
+            {t.readComments} (
+            {place.comments?.length ? place.comments.length + 1 : 1})
+          </button>
+        )}
+      </div>
+
+      <div className="flex sm:flex-col items-center justify-center sm:justify-center gap-3 sm:min-w-[8rem] sm:w-auto shrink-0 bg-stone-50 rounded-[1.5rem] p-4 sm:p-3 mt-2 sm:mt-0">
+        <button
+          onClick={() => handleVoteClick(place.id)}
+          className={`text-white p-4 sm:p-3 rounded-2xl shadow-lg transition-all active:scale-90 flex items-center justify-center
+            ${
+              isVotedByMe
+                ? "bg-green-500 hover:bg-red-500 shadow-green-200"
+                : "bg-orange-500 hover:bg-orange-600 hover:-translate-y-1 shadow-orange-200"
+            }`}
+          title={
+            isVotedByMe
+              ? "Ritira il tuo consiglio"
+              : "Aggiungi ai tuoi consigli"
+          }
+        >
+          {isVotedByMe ? (
+            <div className="relative group/btn h-6 w-6 flex items-center justify-center">
+              <ThumbsUp
+                className="absolute fill-white group-hover/btn:opacity-0 transition-opacity"
+                size={24}
+              />
+              <X
+                className="absolute text-white opacity-0 group-hover/btn:opacity-100 transition-opacity"
+                size={24}
+              />
+            </div>
+          ) : (
+            <ThumbsUp className="fill-white" size={24} />
+          )}
+        </button>
+
+        <div className="text-center mt-1">
+          <span className="block font-black text-2xl text-stone-800 leading-none mb-1">
+            {place.votes}
+          </span>
+          <span className="block text-[10px] sm:text-[11px] text-stone-500 font-bold uppercase tracking-wider leading-tight break-words">
+            {t.localVotes}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default function App() {
@@ -580,6 +802,7 @@ export default function App() {
   // Nuovi stati per i Commenti/Consigli
   const [placeToSupport, setPlaceToSupport] = useState<any>(null);
   const [supportComment, setSupportComment] = useState("");
+  const [supportImagePreview, setSupportImagePreview] = useState<any>(null);
   const [viewingCommentsFor, setViewingCommentsFor] = useState<any>(null);
 
   const googleInputRef = useRef<any>(null);
@@ -1334,6 +1557,15 @@ export default function App() {
     }
   };
 
+  const handleSupportImageUpload = (e: any) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev: any) => setSupportImagePreview(ev.target.result);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const confirmSupport = async (e: any) => {
     e.preventDefault();
     if (!placeToSupport || !currentUser) return;
@@ -1342,11 +1574,12 @@ export default function App() {
     const newVotesArray = [...userVotes, placeToSupport.id];
 
     const newComments = [...(placeToSupport.comments || [])];
-    if (supportComment.trim()) {
+    if (supportComment.trim() || supportImagePreview) {
       newComments.push({
         userId: user.uid,
         userName: currentUser.name,
         text: supportComment.trim(),
+        imageUrl: supportImagePreview,
       });
     }
 
@@ -1393,6 +1626,8 @@ export default function App() {
     );
     setCurrentUser({ ...currentUser, votedPlaces: newVotesArray });
     setPlaceToSupport(null);
+    setSupportComment("");
+    setSupportImagePreview(null);
 
     if (currentView === "add") {
       setSelectedCity(currentUser.residenceCity);
@@ -1677,163 +1912,22 @@ export default function App() {
                   );
                   const isCreator =
                     currentUser && place.creatorId === user?.uid;
-                  const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                    place.name + " " + place.city
-                  )}`;
 
                   return (
-                    <div
+                    <PlaceCard
                       key={place.id}
-                      className="bg-white rounded-[2rem] p-4 shadow-md border border-stone-100 flex flex-col sm:flex-row gap-5 sm:gap-6 relative group hover:shadow-lg transition-shadow"
-                    >
-                      {isCreator && (
-                        <div className="absolute top-4 right-4 flex gap-2 z-20">
-                          <button
-                            onClick={() => setPlaceToEdit(place)}
-                            className="bg-white/90 backdrop-blur text-stone-500 p-2.5 rounded-xl shadow-sm hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                            title="Modifica"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeletePlace(place.id)}
-                            className="bg-white/90 backdrop-blur text-stone-500 p-2.5 rounded-xl shadow-sm hover:text-red-600 hover:bg-red-50 transition-colors"
-                            title="Elimina"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      )}
-
-                      <div className="absolute top-6 left-6 z-10 sm:hidden">
-                        <div className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-md font-black text-lg text-orange-600 border border-white/50">
-                          #{index + 1}
-                        </div>
-                      </div>
-
-                      <div className="hidden sm:flex flex-col items-center justify-center w-16 shrink-0">
-                        <span
-                          className={`text-6xl font-black drop-shadow-sm ${
-                            index === 0
-                              ? "text-yellow-400"
-                              : index === 1
-                              ? "text-stone-300"
-                              : index === 2
-                              ? "text-amber-600"
-                              : "text-stone-200"
-                          }`}
-                        >
-                          {index + 1}
-                        </span>
-                      </div>
-
-                      <div className="w-full sm:w-64 h-56 sm:h-auto shrink-0 overflow-hidden rounded-[1.5rem] relative bg-stone-100">
-                        <img
-                          src={place.imageUrl || defaultFoodImage}
-                          alt={place.name}
-                          className="w-full h-full object-cover"
-                          onError={(e: any) => {
-                            e.currentTarget.onerror = null;
-                            e.currentTarget.src = defaultFoodImage;
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex-1 py-1 flex flex-col justify-center">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2 mb-2 pr-16">
-                              <span
-                                className={`text-[11px] sm:text-xs font-black px-2.5 py-1.5 rounded-lg uppercase tracking-wide ${
-                                  place.type === "Ristorante"
-                                    ? "bg-blue-100 text-blue-800"
-                                    : "bg-green-100 text-green-800"
-                                }`}
-                              >
-                                {place.type === "Ristorante"
-                                  ? t.restaurant
-                                  : t.streetFood}
-                              </span>
-                            </div>
-                            <h2 className="text-2xl sm:text-3xl font-black text-stone-900 leading-tight mb-2.5 mt-2">
-                              {place.name}
-                            </h2>
-
-                            <a
-                              href={googleMapsLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-stone-500 hover:text-orange-600 text-sm font-medium flex items-start gap-1.5 leading-relaxed transition-colors w-fit group/map mt-1"
-                            >
-                              <MapPin size={16} className="shrink-0 mt-0.5" />
-                              <span className="underline decoration-transparent group-hover/map:decoration-orange-600">
-                                {place.address || place.city}
-                              </span>
-                            </a>
-                          </div>
-                        </div>
-
-                        <p className="text-stone-700 text-base sm:text-lg mt-3 bg-orange-50/50 p-4 rounded-2xl border border-orange-100/50 font-medium leading-relaxed">
-                          "{place.description}"
-                        </p>
-
-                        {/* PULSANTE LEGGI COMMENTI */}
-                        {place.creatorName && (
-                          <button
-                            onClick={() => setViewingCommentsFor(place)}
-                            className="mt-4 flex items-center gap-2 text-stone-500 hover:text-orange-600 font-bold text-sm bg-white border border-stone-200 px-4 py-2 rounded-xl w-fit transition-colors shadow-sm"
-                          >
-                            <MessageCircle size={16} />
-                            {t.readComments} (
-                            {place.comments?.length
-                              ? place.comments.length + 1
-                              : 1}
-                            )
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="flex sm:flex-col items-center justify-center sm:justify-center gap-3 sm:min-w-[8rem] sm:w-auto shrink-0 bg-stone-50 rounded-[1.5rem] p-4 sm:p-3 mt-2 sm:mt-0">
-                        <button
-                          onClick={() => handleVoteClick(place.id)}
-                          className={`text-white p-4 sm:p-3 rounded-2xl shadow-lg transition-all active:scale-90 flex items-center justify-center
-                          ${
-                            isVotedByMe
-                              ? "bg-green-500 hover:bg-red-500 shadow-green-200"
-                              : "bg-orange-500 hover:bg-orange-600 hover:-translate-y-1 shadow-orange-200"
-                          }`}
-                          title={
-                            isVotedByMe
-                              ? "Ritira il tuo consiglio"
-                              : "Aggiungi ai tuoi consigli"
-                          }
-                        >
-                          {isVotedByMe ? (
-                            <div className="relative group/btn h-6 w-6 flex items-center justify-center">
-                              <ThumbsUp
-                                className="absolute fill-white group-hover/btn:opacity-0 transition-opacity"
-                                size={24}
-                              />
-                              <X
-                                className="absolute text-white opacity-0 group-hover/btn:opacity-100 transition-opacity"
-                                size={24}
-                              />
-                            </div>
-                          ) : (
-                            <ThumbsUp className="fill-white" size={24} />
-                          )}
-                        </button>
-
-                        <div className="text-center mt-1">
-                          <span className="block font-black text-2xl text-stone-800 leading-none mb-1">
-                            {place.votes}
-                          </span>
-                          <span className="block text-[10px] sm:text-[11px] text-stone-500 font-bold uppercase tracking-wider leading-tight break-words">
-                            {t.localVotes}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                      place={place}
+                      index={index}
+                      isVotedByMe={isVotedByMe}
+                      isCreator={isCreator}
+                      user={user}
+                      currentUser={currentUser}
+                      t={t}
+                      setPlaceToEdit={setPlaceToEdit}
+                      handleDeletePlace={handleDeletePlace}
+                      handleVoteClick={handleVoteClick}
+                      setViewingCommentsFor={setViewingCommentsFor}
+                    />
                   );
                 })
               ) : (
@@ -2043,7 +2137,11 @@ export default function App() {
         <div className="fixed inset-0 bg-stone-900/60 backdrop-blur-md flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-[2rem] p-8 w-full max-w-md shadow-2xl relative">
             <button
-              onClick={() => setPlaceToSupport(null)}
+              onClick={() => {
+                setPlaceToSupport(null);
+                setSupportImagePreview(null);
+                setSupportComment("");
+              }}
               className="absolute top-5 right-5 text-stone-400 hover:text-stone-900 bg-stone-100 p-2 rounded-full"
             >
               <X size={20} />
@@ -2064,6 +2162,35 @@ export default function App() {
                 value={supportComment}
                 onChange={(e) => setSupportComment(e.target.value)}
               ></textarea>
+
+              <div>
+                <label className="block text-sm font-bold text-stone-700 mb-2">
+                  {t.supportPhotoLabel}
+                </label>
+                <div className="relative group border-2 border-dashed border-stone-300 rounded-xl overflow-hidden hover:border-orange-500 transition-colors bg-stone-50 h-32 flex flex-col items-center justify-center text-center px-4">
+                  {supportImagePreview ? (
+                    <img
+                      src={supportImagePreview}
+                      alt="Anteprima"
+                      className="absolute inset-0 w-full h-full object-cover z-0"
+                    />
+                  ) : (
+                    <div className="z-10 flex flex-col items-center">
+                      <Camera size={24} className="text-stone-300 mb-2" />
+                      <p className="text-stone-600 font-medium text-xs px-2">
+                        {t.photoPlaceholder}
+                      </p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSupportImageUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                  />
+                </div>
+              </div>
+
               <button
                 type="submit"
                 className="w-full bg-orange-600 hover:bg-orange-700 text-white font-black text-lg py-4 rounded-xl shadow-lg mt-2 transition-colors flex items-center justify-center gap-2"
@@ -2107,9 +2234,20 @@ export default function App() {
                     {t.creatorTag}
                   </span>
                 </div>
-                <p className="text-stone-700 font-medium leading-relaxed">
+                <p className="text-stone-700 font-medium leading-relaxed mb-3">
                   "{viewingCommentsFor.description}"
                 </p>
+                {/* Se chi l'ha creato originariamente aveva allegato una foto vera (non quella generata dall'AI), la mostriamo qui */}
+                {viewingCommentsFor.imageUrl &&
+                  !viewingCommentsFor.imageUrl.includes("unsplash") && (
+                    <div className="mt-4 rounded-xl overflow-hidden border border-stone-100 max-h-48">
+                      <img
+                        src={viewingCommentsFor.imageUrl}
+                        alt="Foto principale"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
               </div>
 
               {viewingCommentsFor.comments &&
@@ -2130,9 +2268,20 @@ export default function App() {
                         {t.supporterTag}
                       </span>
                     </div>
-                    <p className="text-stone-700 font-medium leading-relaxed">
-                      "{comment.text}"
-                    </p>
+                    {comment.text && (
+                      <p className="text-stone-700 font-medium leading-relaxed mb-3">
+                        "{comment.text}"
+                      </p>
+                    )}
+                    {comment.imageUrl && (
+                      <div className="mt-2 rounded-xl overflow-hidden border border-stone-100 max-h-48">
+                        <img
+                          src={comment.imageUrl}
+                          alt="Foto allegata"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
             </div>
